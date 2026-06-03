@@ -2,11 +2,11 @@ name: Telegram Bot Cron
 
 on:
   schedule:
-    - cron: "0 12 * * *"  # каждый день 12:00 UTC
-  workflow_dispatch:  # ручной запуск
+    - cron: "0 */9 * * *"  # каждые 9 часов (пример)
+  workflow_dispatch:
 
 jobs:
-  run-bot:
+  run:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,4 +22,6 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run bot
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
         run: python main.py
