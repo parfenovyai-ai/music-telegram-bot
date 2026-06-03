@@ -44,3 +44,7 @@ def mark_sent(event_id: str):
 
     conn.commit()
     conn.close()
+
+
+def make_event_id(item):
+    return f"{item['date']}|{item['artist']}|{item['group']}"
