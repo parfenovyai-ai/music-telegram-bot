@@ -1,10 +1,11 @@
 import os
 import json
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 
 import utils
 import config
+import sys
 
 
 # ---------------- TELEGRAM ----------------
@@ -48,29 +49,25 @@ def parse_date(date_str: str):
     try:
         parts = date_str.split("-")
 
-        # YYYY-MM-DD
         if len(parts) == 3 and len(parts[0]) == 4:
             return int(parts[2]), int(parts[1])
 
-        # DD-MM-YYYY
-        if len(parts) == 3:
-            return int(parts[0]), int(parts[1])
+        return int(parts[0]), int(parts[1])
 
     except:
-        pass
-
-    return None
+        return None
 
 
 # ---------------- CORE ----------------
 
 def check_events():
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     day, month = now.day, now.month
 
     print(f"[CRON CHECK] {day}-{month}")
 
     utils.init_db()
+
     events = load_events()
 
     if not events:
@@ -109,7 +106,13 @@ def check_events():
 # ---------------- ENTRY ----------------
 
 if __name__ == "__main__":
+    if not utils.acquire_lock():
+        print("Bot already running - exit")
+        sys.exit(0)
+
     try:
         check_events()
     except Exception as e:
         print("FATAL ERROR:", e)
+    finally:
+        utils.release_lock()
