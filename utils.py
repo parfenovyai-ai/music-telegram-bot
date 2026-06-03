@@ -1,23 +1,50 @@
-import json
+import sqlite3
 import os
-from threading import Lock
 
-STATE_FILE = "state.json"
-file_lock = Lock()
-
-
-def load_state():
-    if not os.path.exists(STATE_FILE):
-        return {"sent": []}
-
-    with open(STATE_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "state.db")
 
 
-def save_state(state):
-    with file_lock:
-        with open(STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump(state, f, ensure_ascii=False, indent=2)
+def get_conn():
+    return sqlite3.connect(DB_PATH)
+
+
+def init_db():
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS sent_events (
+            event_id TEXT PRIMARY KEY
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+def is_sent(event_id: str) -> bool:
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute("SELECT 1 FROM sent_events WHERE event_id = ?", (event_id,))
+    result = cur.fetchone()
+
+    conn.close()
+    return result is not None
+
+
+def mark_sent(event_id: str):
+    conn = get_conn()
+    cur = conn.cursor()
+
+    cur.execute(
+        "INSERT OR IGNORE INTO sent_events (event_id) VALUES (?)",
+        (event_id,)
+    )
+
+    conn.commit()
+    conn.close()
 
 
 def make_event_id(item):
