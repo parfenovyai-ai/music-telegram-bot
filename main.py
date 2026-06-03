@@ -12,6 +12,7 @@ import utils
 # ---------------- INIT ----------------
 
 app = Flask(__name__)
+
 utils.init_db()
 
 # ---------------- HEALTH CHECK ----------------
@@ -20,7 +21,7 @@ utils.init_db()
 def home():
     return "Bot is running"
 
-# ---------------- TELEGRAM (PURE HTTP) ----------------
+# ---------------- TELEGRAM ----------------
 
 def send_message(text: str):
     url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
@@ -46,7 +47,7 @@ def load_events():
 
 events = load_events()
 
-# ---------------- LOGIC ----------------
+# ---------------- DATE ----------------
 
 def parse_date(date_str):
     parts = date_str.split("-")
@@ -57,15 +58,13 @@ def parse_date(date_str):
     except:
         return None
 
+# ---------------- CORE ----------------
 
 def check_events():
     now = datetime.datetime.now()
     day, month = now.day, now.month
 
     print(f"[CHECK] {day}-{month}")
-
-    state = utils.load_state()
-    sent = set(state.get("sent", []))
 
     for item in events:
         parsed = parse_date(item.get("date", ""))
@@ -78,7 +77,8 @@ def check_events():
 
         event_id = utils.make_event_id(item)
 
-        if event_id in sent:
+        # 🔥 SQLITE CHECK
+        if utils.is_sent(event_id):
             continue
 
         text = (
@@ -91,13 +91,11 @@ def check_events():
 
         send_message(text)
 
-        sent.add(event_id)
-        state["sent"] = list(sent)
-        utils.save_state(state)
+        utils.mark_sent(event_id)
 
         print("SENT:", event_id)
 
-# ---------------- BACKGROUND LOOP ----------------
+# ---------------- LOOP ----------------
 
 def loop():
     while True:
@@ -108,6 +106,6 @@ def loop():
 
         time.sleep(60)
 
-# ---------------- START THREAD ----------------
+# ---------------- START (IMPORTANT FOR RENDER) ----------------
 
 threading.Thread(target=loop, daemon=True).start()
