@@ -1,15 +1,19 @@
-import datetime
+import os
+import json
 import requests
+from datetime import datetime
+
 import utils
 import config
-import json
-import os
+
+
+# ---------------- TELEGRAM ----------------
 
 def send_message(text: str):
     url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
 
     try:
-        requests.post(
+        resp = requests.post(
             url,
             json={
                 "chat_id": config.CHANNEL_ID,
@@ -17,28 +21,51 @@ def send_message(text: str):
             },
             timeout=10
         )
+        print("TG STATUS:", resp.status_code)
     except Exception as e:
         print("TELEGRAM ERROR:", e)
 
 
+# ---------------- DATA ----------------
+
 def load_events():
     path = os.path.join(os.path.dirname(__file__), "database.json")
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
 
+    if not os.path.exists(path):
+        return []
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print("LOAD EVENTS ERROR:", e)
+        return []
+
+
+# ---------------- DATE PARSE ----------------
 
 def parse_date(date_str: str):
-    parts = date_str.split("-")
     try:
+        parts = date_str.split("-")
+
+        # YYYY-MM-DD
         if len(parts) == 3 and len(parts[0]) == 4:
             return int(parts[2]), int(parts[1])
-        return int(parts[0]), int(parts[1])
-    except:
-        return None
 
+        # DD-MM-YYYY
+        if len(parts) == 3:
+            return int(parts[0]), int(parts[1])
+
+    except:
+        pass
+
+    return None
+
+
+# ---------------- CORE ----------------
 
 def check_events():
-    now = datetime.datetime.now()
+    now = datetime.utcnow()
     day, month = now.day, now.month
 
     print(f"[CRON CHECK] {day}-{month}")
@@ -46,12 +73,17 @@ def check_events():
     utils.init_db()
     events = load_events()
 
+    if not events:
+        print("No events found")
+        return
+
     for item in events:
         parsed = parse_date(item.get("date", ""))
         if not parsed:
             continue
 
         d, m = parsed
+
         if d != day or m != month:
             continue
 
@@ -62,10 +94,10 @@ def check_events():
 
         text = (
             "🎸 РОК-СОБЫТИЕ СЕГОДНЯ\n\n"
-            f"👤 {item.get('artist')}\n"
-            f"🎵 {item.get('group')}\n"
-            f"📅 {item.get('event')}\n"
-            f"🗓 {item.get('date')}"
+            f"👤 {item.get('artist', 'Unknown')}\n"
+            f"🎵 {item.get('group', 'Unknown')}\n"
+            f"📅 {item.get('event', 'Unknown')}\n"
+            f"🗓 {item.get('date', '')}"
         )
 
         send_message(text)
@@ -74,5 +106,10 @@ def check_events():
         print("SENT:", event_id)
 
 
+# ---------------- ENTRY ----------------
+
 if __name__ == "__main__":
-    check_events()
+    try:
+        check_events()
+    except Exception as e:
+        print("FATAL ERROR:", e)
