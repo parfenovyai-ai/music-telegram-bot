@@ -10,6 +10,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import config
 import utils
 
+# ---------------- INIT DB ----------------
+
+utils.init_db()
+
 # ---------------- Flask ----------------
 
 app = Flask(__name__)
@@ -24,7 +28,10 @@ bot = Bot(token=config.TOKEN)
 
 def send_message(text: str) -> None:
     try:
-        bot.send_message(chat_id=config.CHANNEL_ID, text=text)
+        bot.send_message(
+            chat_id=config.CHANNEL_ID,
+            text=text
+        )
     except Exception as e:
         print(f"TELEGRAM ERROR: {e}")
 
@@ -42,13 +49,18 @@ rock_events = load_rock_events()
 def parse_date(date_str: str):
     parts = date_str.split("-")
     try:
+        # YYYY-MM-DD
         if len(parts) == 3 and len(parts[0]) == 4:
             return int(parts[2]), int(parts[1])
-        elif len(parts) == 3:
+
+        # DD-MM-YYYY
+        if len(parts) == 3:
             return int(parts[0]), int(parts[1])
+
         return None
     except:
         return None
+
 
 def check_events():
     today = datetime.datetime.now()
@@ -57,7 +69,7 @@ def check_events():
     print(f"[CHECK] {day}-{month}")
 
     state = utils.load_state()
-    sent = set(state.get("sent", []))   # ⚠️ важно: set
+    sent = set(state.get("sent", []))
 
     for item in rock_events:
         parsed = parse_date(item.get("date", ""))
@@ -65,6 +77,7 @@ def check_events():
             continue
 
         d, m = parsed
+
         if d != day or m != month:
             continue
 
@@ -92,12 +105,15 @@ def check_events():
 # ---------------- Scheduler ----------------
 
 scheduler = None
+scheduler_started = False
 
 def start_scheduler():
-    global scheduler
+    global scheduler, scheduler_started
 
-    if scheduler:
+    if scheduler_started:
         return
+
+    scheduler_started = True
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_events, "interval", minutes=1)
@@ -105,6 +121,6 @@ def start_scheduler():
 
     print("Scheduler started")
 
-# ---------------- RENDER ENTRYPOINT ----------------
+# ---------------- START ----------------
 
 start_scheduler()
