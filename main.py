@@ -14,6 +14,7 @@ import utils
 app = Flask(__name__)
 
 utils.init_db()
+utils.mark_sent("test_event_123")
 
 # ---------------- HEALTH CHECK ----------------
 
