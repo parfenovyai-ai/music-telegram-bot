@@ -9,6 +9,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 import config
 import utils
+import sys
+print(sys.version)
 
 # ---------------- INIT DB ----------------
 
