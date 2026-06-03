@@ -1,17 +1,54 @@
+import sqlite3
 import json
-import os
 
-STATE_FILE = "state.json"
+DB_PATH = "state.db"
+
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS state (
+            id INTEGER PRIMARY KEY,
+            data TEXT
+        )
+    """)
+
+    cursor.execute("SELECT COUNT(*) FROM state")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("INSERT INTO state (data) VALUES (?)", ("{}",))
+
+    conn.commit()
+    conn.close()
+
 
 def load_state():
-    if not os.path.exists(STATE_FILE):
-        return {"sent": []}
-    with open(STATE_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT data FROM state WHERE id = 1")
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row:
+        return json.loads(row[0])
+    return {"sent": []}
+
 
 def save_state(state):
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(state, f, ensure_ascii=False, indent=2)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "UPDATE state SET data = ? WHERE id = 1",
+        (json.dumps(state, ensure_ascii=False),)
+    )
+
+    conn.commit()
+    conn.close()
+
 
 def make_event_id(item):
-    return f"{item['date']}_{item['artist']}"
+    return f"{item['date']}|{item['artist']}|{item['group']}"
