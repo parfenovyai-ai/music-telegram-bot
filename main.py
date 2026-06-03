@@ -113,16 +113,21 @@ def check_events() -> None:
 
 # ---------------- Scheduler ----------------
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
+scheduler = None
+
 def start_scheduler() -> None:
+    global scheduler
+
+    if scheduler:
+        return  # защита от двойного запуска
+
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_events, "interval", minutes=1)
     scheduler.start()
 
     print("Scheduler started")
-
-    # держим поток живым
-    while True:
-        time.sleep(60)
 
 
 # ---------------- MAIN ----------------
