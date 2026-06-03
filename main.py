@@ -1,5 +1,7 @@
 <<<<<<< HEAD
 import os
+
+TOKEN = os.getenv("TOKEN")
 import json
 import datetime
 import threading
