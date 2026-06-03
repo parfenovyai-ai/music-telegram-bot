@@ -1,85 +1,78 @@
 import os
 import json
+import time
+import threading
 import datetime
-from typing import Any
-
+import requests
 from flask import Flask
-from telegram import Bot
-from apscheduler.schedulers.background import BackgroundScheduler
 
 import config
 import utils
-import sys
-print(sys.version)
 
-# ---------------- INIT DB ----------------
-
-utils.init_db()
-
-# ---------------- Flask ----------------
+# ---------------- INIT ----------------
 
 app = Flask(__name__)
+utils.init_db()
+
+# ---------------- HEALTH CHECK ----------------
 
 @app.get("/")
-def home() -> str:
+def home():
     return "Bot is running"
 
-# ---------------- Bot ----------------
+# ---------------- TELEGRAM (PURE HTTP) ----------------
 
-bot = Bot(token=config.TOKEN)
+def send_message(text: str):
+    url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
 
-def send_message(text: str) -> None:
     try:
-        bot.send_message(
-            chat_id=config.CHANNEL_ID,
-            text=text
+        requests.post(
+            url,
+            json={
+                "chat_id": config.CHANNEL_ID,
+                "text": text
+            },
+            timeout=10
         )
     except Exception as e:
-        print(f"TELEGRAM ERROR: {e}")
+        print("TELEGRAM ERROR:", e)
 
-# ---------------- Data ----------------
+# ---------------- DATA ----------------
 
-def load_rock_events() -> list[dict[str, Any]]:
+def load_events():
     path = os.path.join(os.path.dirname(__file__), "database.json")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-rock_events = load_rock_events()
+events = load_events()
 
-# ---------------- Logic ----------------
+# ---------------- LOGIC ----------------
 
-def parse_date(date_str: str):
+def parse_date(date_str):
     parts = date_str.split("-")
     try:
-        # YYYY-MM-DD
         if len(parts) == 3 and len(parts[0]) == 4:
             return int(parts[2]), int(parts[1])
-
-        # DD-MM-YYYY
-        if len(parts) == 3:
-            return int(parts[0]), int(parts[1])
-
-        return None
+        return int(parts[0]), int(parts[1])
     except:
         return None
 
 
 def check_events():
-    today = datetime.datetime.now()
-    day, month = today.day, today.month
+    now = datetime.datetime.now()
+    day, month = now.day, now.month
 
     print(f"[CHECK] {day}-{month}")
 
     state = utils.load_state()
     sent = set(state.get("sent", []))
 
-    for item in rock_events:
+    for item in events:
         parsed = parse_date(item.get("date", ""))
         if not parsed:
             continue
 
         d, m = parsed
-
         if d != day or m != month:
             continue
 
@@ -90,10 +83,10 @@ def check_events():
 
         text = (
             "🎸 РОК-СОБЫТИЕ СЕГОДНЯ\n\n"
-            f"👤 {item.get('artist', 'Unknown')}\n"
-            f"🎵 {item.get('group', 'Unknown')}\n"
-            f"📅 {item.get('event', 'Unknown')}\n"
-            f"🗓 {item.get('date', '')}"
+            f"👤 {item.get('artist')}\n"
+            f"🎵 {item.get('group')}\n"
+            f"📅 {item.get('event')}\n"
+            f"🗓 {item.get('date')}"
         )
 
         send_message(text)
@@ -102,27 +95,19 @@ def check_events():
         state["sent"] = list(sent)
         utils.save_state(state)
 
-        print(f"SENT: {event_id}")
+        print("SENT:", event_id)
 
-# ---------------- Scheduler ----------------
+# ---------------- BACKGROUND LOOP ----------------
 
-scheduler = None
-scheduler_started = False
+def loop():
+    while True:
+        try:
+            check_events()
+        except Exception as e:
+            print("ERROR:", e)
 
-def start_scheduler():
-    global scheduler, scheduler_started
+        time.sleep(60)
 
-    if scheduler_started:
-        return
+# ---------------- START THREAD ----------------
 
-    scheduler_started = True
-
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(check_events, "interval", minutes=1)
-    scheduler.start()
-
-    print("Scheduler started")
-
-# ---------------- START ----------------
-
-start_scheduler()
+threading.Thread(target=loop, daemon=True).start()
