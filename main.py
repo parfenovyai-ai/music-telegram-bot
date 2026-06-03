@@ -4,7 +4,13 @@ import utils
 import config
 import json
 import os
+from flask import Flask
 
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bot is running"
 # ---------------- TELEGRAM ----------------
 
 def send_message(text: str):
