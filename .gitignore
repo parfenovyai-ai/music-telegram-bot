@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-__pycache__/ 
-echo *.pyc >> .gitignore
-echo venv/ >> .gitignore
-echo .env >> .gitignore
-echo AppData/ >> .gitignore
-echo Thumbs.db >> .gitignore
-=======
 # SQLite database
 state.db
 
@@ -18,4 +10,3 @@ __pycache__/
 
 # Logs
 *.log
->>>>>>> dcf3434b2887ef3c0b027a9c1140273ac590d3f9
