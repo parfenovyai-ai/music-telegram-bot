@@ -1,8 +1,11 @@
 import sqlite3
 import json
+import os
 
-DB_PATH = "state.db"
+DB_PATH = os.path.join(os.path.dirname(__file__), "state.db")
 
+
+# ---------------- INIT DB ----------------
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -11,10 +14,11 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS state (
             id INTEGER PRIMARY KEY,
-            data TEXT
+            data TEXT NOT NULL
         )
     """)
 
+    # создаём единственную строку состояния
     cursor.execute("SELECT COUNT(*) FROM state")
     if cursor.fetchone()[0] == 0:
         cursor.execute("INSERT INTO state (data) VALUES (?)", ("{}",))
@@ -22,6 +26,8 @@ def init_db():
     conn.commit()
     conn.close()
 
+
+# ---------------- LOAD STATE ----------------
 
 def load_state():
     conn = sqlite3.connect(DB_PATH)
@@ -34,8 +40,11 @@ def load_state():
 
     if row:
         return json.loads(row[0])
+
     return {"sent": []}
 
+
+# ---------------- SAVE STATE ----------------
 
 def save_state(state):
     conn = sqlite3.connect(DB_PATH)
@@ -49,6 +58,8 @@ def save_state(state):
     conn.commit()
     conn.close()
 
+
+# ---------------- EVENT ID ----------------
 
 def make_event_id(item):
     return f"{item['date']}|{item['artist']}|{item['group']}"
