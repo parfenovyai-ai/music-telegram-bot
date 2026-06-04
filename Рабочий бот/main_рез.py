@@ -1,46 +1,31 @@
-```python
-import json
 import os
-import sys
-from datetime import datetime, timedelta, timezone
-
+import json
 import requests
+from datetime import datetime, timezone
 
-import config
 import utils
+import config
+import sys
 
 
 # ---------------- TELEGRAM ----------------
 
 def send_message(text: str):
-    if not config.TOKEN:
-        print("ERROR: TOKEN is empty")
-        return False
-
-    if not config.CHANNEL_ID:
-        print("ERROR: CHANNEL_ID is empty")
-        return False
-
     url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
 
     try:
-        response = requests.post(
+        resp = requests.post(
             url,
             json={
                 "chat_id": config.CHANNEL_ID,
                 "text": text
             },
-            timeout=30
+            timeout=10
         )
-
-        print("TG STATUS:", response.status_code)
-        print("TG RESPONSE:", response.text)
-
-        return response.status_code == 200
-
+        print("TG STATUS:", resp.status_code)
+	print("TG RESPONSE:", resp.text)
     except Exception as e:
-        print("TELEGRAM ERROR:", str(e))
-        return False
+        print("TELEGRAM ERROR:", e)
 
 
 # ---------------- DATA ----------------
@@ -48,21 +33,14 @@ def send_message(text: str):
 def load_events():
     path = os.path.join(os.path.dirname(__file__), "database.json")
 
-    print("DATABASE PATH:", path)
-
     if not os.path.exists(path):
-        print("database.json not found")
         return []
 
     try:
         with open(path, "r", encoding="utf-8") as f:
-            events = json.load(f)
-
-        print(f"Loaded {len(events)} events")
-        return events
-
+            return json.load(f)
     except Exception as e:
-        print("LOAD EVENTS ERROR:", str(e))
+        print("LOAD EVENTS ERROR:", e)
         return []
 
 
@@ -72,29 +50,22 @@ def parse_date(date_str: str):
     try:
         parts = date_str.split("-")
 
-        # YYYY-MM-DD
         if len(parts) == 3 and len(parts[0]) == 4:
             return int(parts[2]), int(parts[1])
 
-        # DD-MM
         return int(parts[0]), int(parts[1])
 
-    except Exception:
-        print("BAD DATE FORMAT:", date_str)
+    except:
         return None
 
 
 # ---------------- CORE ----------------
 
 def check_events():
-    # Москва UTC+3
-    moscow_time = datetime.now(timezone.utc) + timedelta(hours=3)
+    now = datetime.now(timezone.utc)
+    day, month = now.day, now.month
 
-    day = moscow_time.day
-    month = moscow_time.month
-
-    print(f"[CRON CHECK] {day:02d}-{month:02d}")
-    print("Moscow time:", moscow_time.strftime("%Y-%m-%d %H:%M:%S"))
+    print(f"[CRON CHECK] {day}-{month}")
 
     utils.init_db()
 
@@ -104,13 +75,8 @@ def check_events():
         print("No events found")
         return
 
-    found_today = False
-
     for item in events:
-        print("CHECKING:", item)
-
         parsed = parse_date(item.get("date", ""))
-
         if not parsed:
             continue
 
@@ -119,12 +85,9 @@ def check_events():
         if d != day or m != month:
             continue
 
-        found_today = True
-
         event_id = utils.make_event_id(item)
 
         if utils.is_sent(event_id):
-            print("Already sent:", event_id)
             continue
 
         text = (
@@ -135,36 +98,22 @@ def check_events():
             f"🗓 {item.get('date', '')}"
         )
 
-        success = send_message(text)
+        send_message(text)
+        utils.mark_sent(event_id)
 
-        if success:
-            utils.mark_sent(event_id)
-            print("SENT:", event_id)
-        else:
-            print("FAILED TO SEND:", event_id)
-
-    if not found_today:
-        print("No events for today")
+        print("SENT:", event_id)
 
 
 # ---------------- ENTRY ----------------
 
 if __name__ == "__main__":
-    print("===== BOT STARTED =====")
-    print("TOKEN EXISTS:", bool(config.TOKEN))
-    print("CHANNEL_ID:", config.CHANNEL_ID)
-
     if not utils.acquire_lock():
         print("Bot already running - exit")
         sys.exit(0)
 
     try:
         check_events()
-
     except Exception as e:
-        print("FATAL ERROR:", str(e))
-
+        print("FATAL ERROR:", e)
     finally:
         utils.release_lock()
-        print("===== BOT FINISHED =====")
-```
