@@ -1,4 +1,3 @@
-```python
 import json
 import os
 import sys
@@ -13,6 +12,13 @@ import utils
 # ---------------- TELEGRAM ----------------
 
 def send_message(text: str):
+    print("=== SEND MESSAGE DEBUG ===")
+    print("TOKEN EXISTS:", bool(config.TOKEN))
+    print("CHANNEL_ID EXISTS:", bool(config.CHANNEL_ID))
+
+    print("TOKEN PREFIX:", config.TOKEN[:10] if config.TOKEN else None)
+    print("CHANNEL_ID:", config.CHANNEL_ID)
+
     if not config.TOKEN:
         print("ERROR: TOKEN is empty")
         return False
@@ -87,7 +93,6 @@ def parse_date(date_str: str):
 # ---------------- CORE ----------------
 
 def check_events():
-    # Москва UTC+3
     moscow_time = datetime.now(timezone.utc) + timedelta(hours=3)
 
     day = moscow_time.day
@@ -151,8 +156,23 @@ def check_events():
 
 if __name__ == "__main__":
     print("===== BOT STARTED =====")
+
     print("TOKEN EXISTS:", bool(config.TOKEN))
     print("CHANNEL_ID:", config.CHANNEL_ID)
+
+    print("ENV CHECK:")
+    print("TOKEN RAW:", repr(config.TOKEN))
+    print("CHANNEL_ID RAW:", repr(config.CHANNEL_ID))
+
+    if config.TOKEN:
+        print("TOKEN PREFIX:", config.TOKEN[:10])
+    else:
+        print("TOKEN IS EMPTY ❌")
+
+    if config.CHANNEL_ID:
+        print("CHANNEL_ID OK ✔")
+    else:
+        print("CHANNEL_ID IS EMPTY ❌")
 
     if not utils.acquire_lock():
         print("Bot already running - exit")
@@ -167,4 +187,3 @@ if __name__ == "__main__":
     finally:
         utils.release_lock()
         print("===== BOT FINISHED =====")
-```
