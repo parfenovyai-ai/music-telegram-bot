@@ -2,7 +2,7 @@ name: Telegram Bot Cron
 
 on:
   schedule:
-    - cron: "0 6 * * *"  # в 9 часов (пример)
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Debug secrets
+        run: |
+          python -c "import os; print('TOKEN EXISTS:', bool(os.getenv('TOKEN'))); print('CHANNEL_ID:', os.getenv('CHANNEL_ID'))"
+
       - name: Run bot
         env:
           TOKEN: ${{ secrets.TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
         run: python main.py
