@@ -2,7 +2,7 @@ name: Telegram Bot Cron
 
 on:
   schedule:
-    - cron: "0 */9 * * *"  # каждые 9 часов (пример)
+    - cron: "0 6 * * *"  # в 9 часов (пример)
   workflow_dispatch:
 
 jobs:
