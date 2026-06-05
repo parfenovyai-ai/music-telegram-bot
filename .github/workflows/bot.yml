@@ -24,6 +24,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Check secrets
+        env:
+          TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "TOKEN IS EMPTY"; fi
+          if [ -z "$CHANNEL_ID" ]; then echo "CHANNEL_ID IS EMPTY"; fi
+
       - name: Run bot
         env:
           TOKEN: ${{ secrets.BOT_TOKEN }}
