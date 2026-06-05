@@ -8,9 +8,14 @@ from zoneinfo import ZoneInfo
 TOKEN = os.getenv("TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
+if not TOKEN or not CHANNEL_ID:
+    print("ERROR: TOKEN or CHANNEL_ID is missing")
+    exit(1)
+
 API_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
 DB_FILE = "database.json"
+SENT_FILE = "sent.json"
 
 
 # === LOAD EVENTS ===
@@ -23,10 +28,7 @@ def load_events():
         return []
 
 
-# === SENT STORAGE (simple file-based) ===
-SENT_FILE = "sent.json"
-
-
+# === SENT STORAGE ===
 def load_sent():
     try:
         with open(SENT_FILE, "r", encoding="utf-8") as f:
@@ -36,11 +38,14 @@ def load_sent():
 
 
 def save_sent(sent):
-    with open(SENT_FILE, "w", encoding="utf-8") as f:
-        json.dump(list(sent), f)
+    try:
+        with open(SENT_FILE, "w", encoding="utf-8") as f:
+            json.dump(list(sent), f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print("ERROR saving sent file:", e)
 
 
-# === PARSE DATE ===
+# === DATE PARSER (DD-MM-YYYY) ===
 def parse_date(date_str):
     try:
         return datetime.strptime(date_str, "%d-%m-%Y").date()
@@ -48,7 +53,7 @@ def parse_date(date_str):
         return None
 
 
-# === SEND MESSAGE ===
+# === TELEGRAM SEND ===
 def send_message(text):
     payload = {
         "chat_id": CHANNEL_ID,
@@ -62,7 +67,7 @@ def send_message(text):
 
         return r.status_code == 200
     except Exception as e:
-        print("Telegram send error:", e)
+        print("Telegram ERROR:", e)
         return False
 
 
@@ -84,9 +89,11 @@ def check_events():
     found = 0
 
     for item in events:
-        event_date = parse_date(item.get("date", ""))
+        date_raw = item.get("date", "")
+        event_date = parse_date(date_raw)
 
         if not event_date:
+            print("SKIP invalid date:", date_raw)
             continue
 
         if event_date != today:
