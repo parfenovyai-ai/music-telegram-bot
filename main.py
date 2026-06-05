@@ -68,17 +68,13 @@ def get_mm_dd(date_str: str):
     try:
         parts = date_str.split("-")
 
-        if len(parts) == 3:
-            # DD-MM-YYYY
-            dd = int(parts[0])
-            mm = int(parts[1])
-
-        elif len(parts) == 2:
-            dd = int(parts[0])
-            mm = int(parts[1])
-
-        else:
+        if len(parts) != 3:
             return None
+
+        # DD-MM-YYYY
+        dd = int(parts[0])
+        mm = int(parts[1])
+        yyyy = int(parts[2])
 
         return f"{mm:02d}", f"{dd:02d}"
 
