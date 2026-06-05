@@ -64,7 +64,7 @@ def load_events():
 
 # ---------------- DATE LOGIC ----------------
 
-ddef get_mm_dd(date_str: str):
+def get_mm_dd(date_str: str):
     try:
         parts = date_str.split("-")
 
