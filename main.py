@@ -9,7 +9,7 @@ TOKEN = os.getenv("TOKEN")
 CHANNEL_ID = os.getenv("CHANNEL_ID")
 
 if not TOKEN or not CHANNEL_ID:
-    print("ERROR: TOKEN or CHANNEL_ID is missing")
+    print("ERROR: Missing TOKEN or CHANNEL_ID")
     exit(1)
 
 API_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -45,12 +45,14 @@ def save_sent(sent):
         print("ERROR saving sent file:", e)
 
 
-# === DATE PARSER (DD-MM-YYYY) ===
+# === SMART DATE PARSER ===
 def parse_date(date_str):
-    try:
-        return datetime.strptime(date_str, "%d-%m-%Y").date()
-    except:
-        return None
+    for fmt in ("%d-%m-%Y", "%d-%m"):
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except:
+            continue
+    return None
 
 
 # === TELEGRAM SEND ===
@@ -64,7 +66,6 @@ def send_message(text):
     try:
         r = requests.post(API_URL, data=payload, timeout=10)
         print("Telegram response:", r.status_code, r.text)
-
         return r.status_code == 200
     except Exception as e:
         print("Telegram ERROR:", e)
@@ -73,12 +74,13 @@ def send_message(text):
 
 # === MAIN LOGIC ===
 def check_events():
-    moscow_time = datetime.now(ZoneInfo("Europe/Moscow"))
-    today = moscow_time.date()
+    now = datetime.now(ZoneInfo("Europe/Moscow"))
+    today_month = now.month
+    today_day = now.day
 
     print("=== CRON START ===")
-    print("Moscow time:", moscow_time)
-    print("Today:", today)
+    print("Moscow time:", now)
+    print(f"Today: {today_day:02d}-{today_month:02d}")
 
     events = load_events()
     sent = load_sent()
@@ -89,14 +91,15 @@ def check_events():
     found = 0
 
     for item in events:
-        date_raw = item.get("date", "")
-        event_date = parse_date(date_raw)
+        raw_date = item.get("date", "")
+        event_date = parse_date(raw_date)
 
         if not event_date:
-            print("SKIP invalid date:", date_raw)
+            print("SKIP invalid date:", raw_date)
             continue
 
-        if event_date != today:
+        # === MATCH LOGIC (supports DD-MM and DD-MM-YYYY) ===
+        if event_date.month != today_month or event_date.day != today_day:
             continue
 
         found += 1
