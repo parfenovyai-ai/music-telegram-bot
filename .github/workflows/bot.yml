@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run bot (NO SECRETS)
+      - name: Run bot
         env:
-          TOKEN: "8597659675:AAH5Api5SZIOZmzYiE57ba4Jhv5U6t88VZ4"
-          CHANNEL_ID: "-1002150432597"
+          TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
         run: python main.py
