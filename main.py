@@ -64,29 +64,26 @@ def load_events():
 
 # ---------------- DATE LOGIC ----------------
 
-def get_mm_dd(date_str: str):
-    """
-    Поддерживает:
-    YYYY-MM-DD
-    DD-MM
-    """
+ddef get_mm_dd(date_str: str):
     try:
         parts = date_str.split("-")
 
         if len(parts) == 3:
-            # YYYY-MM-DD
-            return parts[1], parts[2]
+            # DD-MM-YYYY
+            dd = int(parts[0])
+            mm = int(parts[1])
 
-        if len(parts) == 2:
-            # DD-MM
-            return parts[1], parts[0]
+        elif len(parts) == 2:
+            dd = int(parts[0])
+            mm = int(parts[1])
 
-    except Exception as e:
-        print("BAD DATE:", date_str, e)
+        else:
+            return None
 
-    return None
+        return f"{mm:02d}", f"{dd:02d}"
 
-
+    except:
+        return None
 # ---------------- CORE ----------------
 
 def check_events():
