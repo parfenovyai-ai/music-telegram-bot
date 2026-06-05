@@ -1,37 +1,103 @@
+import os
+import json
+import requests
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+# === CONFIG ===
+TOKEN = os.getenv("TOKEN")
+CHANNEL_ID = os.getenv("CHANNEL_ID")
+
+API_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+
+DB_FILE = "database.json"
+
+
+# === LOAD EVENTS ===
+def load_events():
+    try:
+        with open(DB_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print("ERROR loading database:", e)
+        return []
+
+
+# === SENT STORAGE (simple file-based) ===
+SENT_FILE = "sent.json"
+
+
+def load_sent():
+    try:
+        with open(SENT_FILE, "r", encoding="utf-8") as f:
+            return set(json.load(f))
+    except:
+        return set()
+
+
+def save_sent(sent):
+    with open(SENT_FILE, "w", encoding="utf-8") as f:
+        json.dump(list(sent), f)
+
+
+# === PARSE DATE ===
+def parse_date(date_str):
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    except:
+        return None
+
+
+# === SEND MESSAGE ===
+def send_message(text):
+    payload = {
+        "chat_id": CHANNEL_ID,
+        "text": text,
+        "parse_mode": "HTML"
+    }
+
+    try:
+        r = requests.post(API_URL, data=payload, timeout=10)
+        print("Telegram response:", r.status_code, r.text)
+
+        return r.status_code == 200
+    except Exception as e:
+        print("Telegram send error:", e)
+        return False
+
+
+# === MAIN LOGIC ===
 def check_events():
-    moscow_time = datetime.now(timezone.utc) + timedelta(hours=3)
+    moscow_time = datetime.now(ZoneInfo("Europe/Moscow"))
+    today = moscow_time.date()
 
-    today_mm = f"{moscow_time.month:02d}"
-    today_dd = f"{moscow_time.day:02d}"
-
-    print(f"[CRON CHECK] {today_dd}-{today_mm}")
-    print("Moscow time:", moscow_time.strftime("%Y-%m-%d %H:%M:%S"))
-
-    utils.init_db()
+    print("=== CRON START ===")
+    print("Moscow time:", moscow_time)
+    print("Today:", today)
 
     events = load_events()
-    if not events:
-        print("No events found")
-        return
+    sent = load_sent()
 
-    has_today_events = False
+    print("Loaded events:", len(events))
+    print("Already sent:", len(sent))
+
+    found = 0
 
     for item in events:
-        mm_dd = get_mm_dd(item.get("date", ""))
-        if not mm_dd:
+        event_date = parse_date(item.get("date", ""))
+
+        if not event_date:
             continue
 
-        mm, dd = mm_dd
-
-        if mm != today_mm or dd != today_dd:
+        if event_date != today:
             continue
 
-        has_today_events = True
+        found += 1
 
-        event_id = utils.make_event_id(item)
+        event_id = f"{item.get('date')}-{item.get('artist')}-{item.get('group')}"
 
-        if utils.is_sent(event_id):
-            print("SKIP (already sent):", event_id)
+        if event_id in sent:
+            print("SKIP already sent:", event_id)
             continue
 
         text = (
@@ -43,10 +109,17 @@ def check_events():
         )
 
         if send_message(text):
-            utils.mark_sent(event_id)
+            sent.add(event_id)
+            save_sent(sent)
             print("SENT:", event_id)
         else:
             print("FAILED:", event_id)
 
-    if not has_today_events:
+    if found == 0:
         print("No events for today")
+
+    print("=== CRON END ===")
+
+
+if __name__ == "__main__":
+    check_events()
