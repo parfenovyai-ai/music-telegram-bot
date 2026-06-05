@@ -1,87 +1,3 @@
-import json
-import os
-import sys
-from datetime import datetime, timedelta, timezone
-
-import requests
-
-import config
-import utils
-
-
-# ---------------- TELEGRAM ----------------
-
-def send_message(text: str) -> bool:
-    if not config.TOKEN or not config.CHANNEL_ID:
-        print("ERROR: Missing TOKEN or CHANNEL_ID")
-        return False
-
-    url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
-
-    try:
-        response = requests.post(
-            url,
-            json={
-                "chat_id": config.CHANNEL_ID,
-                "text": text,
-                "parse_mode": "HTML"
-            },
-            timeout=30
-        )
-
-        print("TG STATUS:", response.status_code)
-        print("TG RESPONSE:", response.text)
-
-        return response.status_code == 200
-
-    except Exception as e:
-        print("TELEGRAM ERROR:", str(e))
-        return False
-
-
-# ---------------- DATA ----------------
-
-def load_events():
-    path = os.path.join(os.path.dirname(__file__), "database.json")
-
-    print("DATABASE PATH:", path)
-
-    if not os.path.exists(path):
-        print("ERROR: database.json not found")
-        return []
-
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        print(f"Loaded {len(data)} events")
-        return data
-
-    except Exception as e:
-        print("LOAD ERROR:", str(e))
-        return []
-
-
-# ---------------- DATE LOGIC ----------------
-
-def get_mm_dd(date_str: str):
-    try:
-        parts = date_str.split("-")
-
-        if len(parts) != 3:
-            return None
-
-        # DD-MM-YYYY
-        dd = int(parts[0])
-        mm = int(parts[1])
-        yyyy = int(parts[2])
-
-        return f"{mm:02d}", f"{dd:02d}"
-
-    except:
-        return None
-# ---------------- CORE ----------------
-
 def check_events():
     moscow_time = datetime.now(timezone.utc) + timedelta(hours=3)
 
@@ -98,13 +14,10 @@ def check_events():
         print("No events found")
         return
 
-    found = False
+    has_today_events = False
 
     for item in events:
-        print("CHECKING:", item)
-
         mm_dd = get_mm_dd(item.get("date", ""))
-
         if not mm_dd:
             continue
 
@@ -113,7 +26,7 @@ def check_events():
         if mm != today_mm or dd != today_dd:
             continue
 
-        found = True
+        has_today_events = True
 
         event_id = utils.make_event_id(item)
 
@@ -135,28 +48,5 @@ def check_events():
         else:
             print("FAILED:", event_id)
 
-    if not found:
+    if not has_today_events:
         print("No events for today")
-
-
-# ---------------- ENTRY ----------------
-
-if __name__ == "__main__":
-    print("===== BOT STARTED =====")
-
-    print("TOKEN OK:", bool(config.TOKEN))
-    print("CHANNEL:", config.CHANNEL_ID)
-
-    if not utils.acquire_lock():
-        print("Bot already running - exit")
-        sys.exit(0)
-
-    try:
-        check_events()
-
-    except Exception as e:
-        print("FATAL ERROR:", str(e))
-
-    finally:
-        utils.release_lock()
-        print("===== BOT FINISHED =====")
