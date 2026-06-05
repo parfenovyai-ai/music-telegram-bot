@@ -4,21 +4,43 @@ import requests
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-# === CONFIG ===
-TOKEN = os.getenv("TOKEN")
-CHANNEL_ID = os.getenv("CHANNEL_ID")
+# =====================
+# CONFIG
+# =====================
+TOKEN = (os.getenv("TOKEN") or "").strip()
+CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 
 if not TOKEN or not CHANNEL_ID:
-    print("ERROR: Missing TOKEN or CHANNEL_ID")
+    print("❌ ERROR: Missing TOKEN or CHANNEL_ID")
     exit(1)
 
 API_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+TEST_URL = f"https://api.telegram.org/bot{TOKEN}/getMe"
 
 DB_FILE = "database.json"
 SENT_FILE = "sent.json"
 
 
-# === LOAD EVENTS ===
+# =====================
+# TELEGRAM CHECK
+# =====================
+def check_bot():
+    try:
+        r = requests.get(TEST_URL, timeout=10)
+        print("BOT CHECK:", r.status_code, r.text)
+
+        if r.status_code != 200:
+            print("❌ Invalid Telegram token (getMe failed)")
+            exit(1)
+
+    except Exception as e:
+        print("❌ Telegram check error:", e)
+        exit(1)
+
+
+# =====================
+# LOAD DATA
+# =====================
 def load_events():
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
@@ -28,7 +50,6 @@ def load_events():
         return []
 
 
-# === SENT STORAGE ===
 def load_sent():
     try:
         with open(SENT_FILE, "r", encoding="utf-8") as f:
@@ -42,11 +63,14 @@ def save_sent(sent):
         with open(SENT_FILE, "w", encoding="utf-8") as f:
             json.dump(list(sent), f, ensure_ascii=False, indent=2)
     except Exception as e:
-        print("ERROR saving sent file:", e)
+        print("ERROR saving sent:", e)
 
 
-# === SMART DATE PARSER ===
+# =====================
+# DATE PARSER
+# =====================
 def parse_date(date_str):
+    date_str = date_str.strip()
     for fmt in ("%d-%m-%Y", "%d-%m"):
         try:
             return datetime.strptime(date_str, fmt).date()
@@ -55,7 +79,9 @@ def parse_date(date_str):
     return None
 
 
-# === TELEGRAM SEND ===
+# =====================
+# TELEGRAM SEND
+# =====================
 def send_message(text):
     payload = {
         "chat_id": CHANNEL_ID,
@@ -72,7 +98,9 @@ def send_message(text):
         return False
 
 
-# === MAIN LOGIC ===
+# =====================
+# MAIN LOGIC
+# =====================
 def check_events():
     now = datetime.now(ZoneInfo("Europe/Moscow"))
     today_month = now.month
@@ -98,7 +126,7 @@ def check_events():
             print("SKIP invalid date:", raw_date)
             continue
 
-        # === MATCH LOGIC (supports DD-MM and DD-MM-YYYY) ===
+        # MATCH by day/month only (supports yearly events)
         if event_date.month != today_month or event_date.day != today_day:
             continue
 
@@ -131,5 +159,10 @@ def check_events():
     print("=== CRON END ===")
 
 
+# =====================
+# ENTRYPOINT
+# =====================
 if __name__ == "__main__":
+    print("TOKEN START:", TOKEN[:10])
+    check_bot()
     check_events()
