@@ -43,7 +43,7 @@ def save_sent(sent):
 # === PARSE DATE ===
 def parse_date(date_str):
     try:
-        return datetime.strptime(date_str, "%Y-%m-%d").date()
+        return datetime.strptime(date_str, "%d-%m-%Y").date()
     except:
         return None
 
