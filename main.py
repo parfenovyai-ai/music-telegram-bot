@@ -11,20 +11,9 @@ import utils
 
 # ---------------- TELEGRAM ----------------
 
-def send_message(text: str):
-    print("=== SEND MESSAGE DEBUG ===")
-    print("TOKEN EXISTS:", bool(config.TOKEN))
-    print("CHANNEL_ID EXISTS:", bool(config.CHANNEL_ID))
-
-    print("TOKEN PREFIX:", config.TOKEN[:10] if config.TOKEN else None)
-    print("CHANNEL_ID:", config.CHANNEL_ID)
-
-    if not config.TOKEN:
-        print("ERROR: TOKEN is empty")
-        return False
-
-    if not config.CHANNEL_ID:
-        print("ERROR: CHANNEL_ID is empty")
+def send_message(text: str) -> bool:
+    if not config.TOKEN or not config.CHANNEL_ID:
+        print("ERROR: Missing TOKEN or CHANNEL_ID")
         return False
 
     url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
@@ -34,7 +23,8 @@ def send_message(text: str):
             url,
             json={
                 "chat_id": config.CHANNEL_ID,
-                "text": text
+                "text": text,
+                "parse_mode": "HTML"
             },
             timeout=30
         )
@@ -57,37 +47,44 @@ def load_events():
     print("DATABASE PATH:", path)
 
     if not os.path.exists(path):
-        print("database.json not found")
+        print("ERROR: database.json not found")
         return []
 
     try:
         with open(path, "r", encoding="utf-8") as f:
-            events = json.load(f)
+            data = json.load(f)
 
-        print(f"Loaded {len(events)} events")
-        return events
+        print(f"Loaded {len(data)} events")
+        return data
 
     except Exception as e:
-        print("LOAD EVENTS ERROR:", str(e))
+        print("LOAD ERROR:", str(e))
         return []
 
 
-# ---------------- DATE PARSE ----------------
+# ---------------- DATE LOGIC ----------------
 
-def parse_date(date_str: str):
+def get_mm_dd(date_str: str):
+    """
+    Поддерживает:
+    YYYY-MM-DD
+    DD-MM
+    """
     try:
         parts = date_str.split("-")
 
-        # YYYY-MM-DD
-        if len(parts) == 3 and len(parts[0]) == 4:
-            return int(parts[2]), int(parts[1])
+        if len(parts) == 3:
+            # YYYY-MM-DD
+            return parts[1], parts[2]
 
-        # DD-MM
-        return int(parts[0]), int(parts[1])
+        if len(parts) == 2:
+            # DD-MM
+            return parts[1], parts[0]
 
-    except Exception:
-        print("BAD DATE FORMAT:", date_str)
-        return None
+    except Exception as e:
+        print("BAD DATE:", date_str, e)
+
+    return None
 
 
 # ---------------- CORE ----------------
@@ -95,60 +92,57 @@ def parse_date(date_str: str):
 def check_events():
     moscow_time = datetime.now(timezone.utc) + timedelta(hours=3)
 
-    day = moscow_time.day
-    month = moscow_time.month
+    today_mm = f"{moscow_time.month:02d}"
+    today_dd = f"{moscow_time.day:02d}"
 
-    print(f"[CRON CHECK] {day:02d}-{month:02d}")
+    print(f"[CRON CHECK] {today_dd}-{today_mm}")
     print("Moscow time:", moscow_time.strftime("%Y-%m-%d %H:%M:%S"))
 
     utils.init_db()
 
     events = load_events()
-
     if not events:
         print("No events found")
         return
 
-    found_today = False
+    found = False
 
     for item in events:
         print("CHECKING:", item)
 
-        parsed = parse_date(item.get("date", ""))
+        mm_dd = get_mm_dd(item.get("date", ""))
 
-        if not parsed:
+        if not mm_dd:
             continue
 
-        d, m = parsed
+        mm, dd = mm_dd
 
-        if d != day or m != month:
+        if mm != today_mm or dd != today_dd:
             continue
 
-        found_today = True
+        found = True
 
         event_id = utils.make_event_id(item)
 
         if utils.is_sent(event_id):
-            print("Already sent:", event_id)
+            print("SKIP (already sent):", event_id)
             continue
 
         text = (
-            "🎸 РОК-СОБЫТИЕ СЕГОДНЯ\n\n"
+            "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
             f"👤 {item.get('artist', 'Unknown')}\n"
             f"🎵 {item.get('group', 'Unknown')}\n"
             f"📅 {item.get('event', 'Unknown')}\n"
             f"🗓 {item.get('date', '')}"
         )
 
-        success = send_message(text)
-
-        if success:
+        if send_message(text):
             utils.mark_sent(event_id)
             print("SENT:", event_id)
         else:
-            print("FAILED TO SEND:", event_id)
+            print("FAILED:", event_id)
 
-    if not found_today:
+    if not found:
         print("No events for today")
 
 
@@ -157,22 +151,8 @@ def check_events():
 if __name__ == "__main__":
     print("===== BOT STARTED =====")
 
-    print("TOKEN EXISTS:", bool(config.TOKEN))
-    print("CHANNEL_ID:", config.CHANNEL_ID)
-
-    print("ENV CHECK:")
-    print("TOKEN RAW:", repr(config.TOKEN))
-    print("CHANNEL_ID RAW:", repr(config.CHANNEL_ID))
-
-    if config.TOKEN:
-        print("TOKEN PREFIX:", config.TOKEN[:10])
-    else:
-        print("TOKEN IS EMPTY ❌")
-
-    if config.CHANNEL_ID:
-        print("CHANNEL_ID OK ✔")
-    else:
-        print("CHANNEL_ID IS EMPTY ❌")
+    print("TOKEN OK:", bool(config.TOKEN))
+    print("CHANNEL:", config.CHANNEL_ID)
 
     if not utils.acquire_lock():
         print("Bot already running - exit")
