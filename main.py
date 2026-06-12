@@ -1,4 +1,3 @@
-```python
 import os
 import json
 import time
@@ -289,4 +288,3 @@ def check_events():
 if __name__ == "__main__":
     check_bot()
     check_events()
-```
