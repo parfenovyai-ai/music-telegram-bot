@@ -160,7 +160,7 @@
 
 {"date": "17-02-1963", "artist": "Michael Jordan (рок-культура влияние)", "group": "Solo", "event": "Родился😊"},
 
-{"date": "18-02-1958", "artist": "Gar Samuelson", "group": Megadeth", "event": "Родилась😊"},
+{"date": "18-02-1958", "artist": "Gar Samuelson", "group":"Megadeth", "event": "Родилась😊"},
 
 {"date": "19-02-1948", "artist": "Tony Iommi", "group": "Black Sabbath", "event": "Родился😊"},
 
