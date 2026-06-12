@@ -14,7 +14,7 @@ from requests.adapters import HTTPAdapter
 # CONFIG
 # =====================
 
-TOKEN = (os.getenv("TOKEN") or "").strip()
+TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 
