@@ -3,12 +3,13 @@ import json
 import time
 import hashlib
 import logging
-import requests
 import random
+import requests
 
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from requests.adapters import HTTPAdapter
+from html import escape
 
 # =====================
 # CONFIG
@@ -32,25 +33,16 @@ MAX_RETRIES = 3
 SEND_DELAY = 1
 
 # =====================
-# ROCK PHRASES
+# PHRASES
 # =====================
 
 ROCK_PHRASES = [
     "Музыка не стареет — она становится историей",
-    "Каждый аккорд оставляет след во времени",
     "Рок живёт там, где заканчиваются слова",
-    "История музыки пишется не датами, а звуком",
+    "Каждый аккорд оставляет след во времени",
     "Где звучит гитара — там начинается память",
-    "Эпохи уходят, но риффы остаются",
-    "Один звук может изменить целую эпоху",
-    "Музыка — это память, которая умеет звучать",
-
-    "Где заканчивается страх — начинается металл",
-    "Каждый аккорд — как удар судьбы",
-    "Мы не герои — мы свидетели огня",
-    "Металл живёт там, где умирает страх",
-    "Рок не умирает — он становится шрамом",
     "И даже тишина боится перегруза",
+    "Металл живёт там, где умирает страх",
 ]
 
 last_phrase = None
@@ -76,8 +68,7 @@ if OPENAI_API_KEY:
     try:
         from openai import OpenAI
         client = OpenAI(api_key=OPENAI_API_KEY)
-    except Exception as e:
-        logging.error("OpenAI init failed: %s", e)
+    except:
         client = None
 
 # =====================
@@ -145,7 +136,7 @@ def send_message(text):
 
     for _ in range(MAX_RETRIES):
         try:
-            r = requests.post(API_URL + "/sendMessage", data=payload, timeout=15)
+            r = session.post(API_URL + "/sendMessage", data=payload, timeout=15)
             if r.status_code == 200:
                 return True
         except:
@@ -164,43 +155,35 @@ def make_event_id(item, year):
     return f"{year}_{hashlib.sha256(raw.encode()).hexdigest()}"
 
 # =====================
-# AI GENERATION
+# AI
 # =====================
 
-def ai_generate(item, age=None):
+def ai_generate(item):
 
-    if client is None:
+    if not client:
         return None
 
     prompt = f"""
-Ты редактор музыкального медиа уровня Rolling Stone / Kerrang.
+Ты музыкальный журналист.
 
-ВАЖНО:
-- НЕ используй имя, фамилию, название группы
-- НЕ упоминай их вообще
-- пиши абстрактно ("музыкант", "группа")
-
-СТИЛЬ:
-- живой музыкальный текст
-- 4–6 абзацев
-- без шаблонов
-- финальная короткая сильная фраза
+ЗАПРЕТ:
+- не используй имя
+- не используй группу
+- не повторяй данные
 
 СОБЫТИЕ:
-Субъект: музыкант / группа
-Событие: {item.get('event')}
-Возраст: {age}
+{item.get('event')}
 """
 
     try:
         res = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
-                {"role": "system", "content": "Ты музыкальный журналист."},
+                {"role": "system", "content": "Ты музыкальный редактор."},
                 {"role": "user", "content": prompt}
             ],
             temperature=1.0,
-            max_tokens=300
+            max_tokens=250
         )
 
         return res.choices[0].message.content.strip()
@@ -209,34 +192,42 @@ def ai_generate(item, age=None):
         return None
 
 # =====================
+# HEADER
+# =====================
+
+def build_header(item):
+    return (
+        "🎸🔥 РОК-СОБЫТИЕ СЕГОДНЯ 🔥🎸\n\n"
+        f"👤 {item.get('artist','—')}\n"
+        f"🎵 {item.get('group','—')}\n"
+        f"📅 {item.get('event','—')}\n"
+        f"🗓 {item.get('date','—')}\n"
+    )
+
+# =====================
 # FRAME
 # =====================
 
 def wrap_frame(text):
-    phrase = get_phrase()
-
     return (
-        "━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🎸🔥 <b>ROCK HISTORY</b> 🔥🎸\n"
-        "━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"{text}\n\n"
-        "━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"🎧 <i>{phrase}</i>\n"
-        "━━━━━━━━━━━━━━━━━━━━━━"
+        f"🎧 <i>{get_phrase()}</i>"
     )
 
 # =====================
 # MESSAGE
 # =====================
 
-def build_message(item, year, age):
+def build_message(item):
 
-    text = ai_generate(item, age)
+    ai_text = ai_generate(item)
 
-    if not text:
-        text = "Музыкальное событие оставило след в истории."
+    if not ai_text:
+        ai_text = "Музыкальное событие оставило след в истории."
 
-    return wrap_frame(text)
+    header = build_header(item)
+
+    return wrap_frame(header + "\n" + ai_text)
 
 # =====================
 # MAIN
@@ -254,9 +245,6 @@ def check_events():
 
     processed = set()
 
-    found = 0
-    sent_count = 0
-
     for item in events:
 
         event_date = parse_date(item.get("date", ""))
@@ -267,8 +255,6 @@ def check_events():
         if event_date.day != now.day or event_date.month != now.month:
             continue
 
-        age = year - event_date.year
-
         event_id = make_event_id(item, year)
 
         if event_id in processed or event_id in sent:
@@ -276,17 +262,13 @@ def check_events():
 
         processed.add(event_id)
 
-        text = build_message(item, year, age)
+        text = build_message(item)
 
         if send_message(text):
             sent.add(event_id)
-            sent_count += 1
             time.sleep(SEND_DELAY)
 
     save_sent(sent)
-
-    print("Found:", found)
-    print("Sent:", sent_count)
 
 # =====================
 # ENTRY
