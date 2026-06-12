@@ -107,6 +107,7 @@ def parse_date(date_str):
 # =====================
 
 def send_message(text):
+
     payload = {
         "chat_id": CHANNEL_ID,
         "text": text,
@@ -135,7 +136,7 @@ def make_event_id(item, year):
     return f"{year}_{h}"
 
 # =====================
-# AI GENERATION (IMPROVED)
+# AI GENERATION
 # =====================
 
 def ai_generate(item, age=None):
@@ -146,39 +147,27 @@ def ai_generate(item, age=None):
     prompt = f"""
 Ты редактор музыкального медиа уровня Rolling Stone / Kerrang.
 
-ЗАДАЧА:
-Напиши короткий, живой пост для Telegram о музыкальном событии.
-
-СТИЛЬ:
-- как колонка музыкального журнала
-- живо, эмоционально, без пафоса
-- ритмичный текст
-
-СТРУКТУРА:
-1. сильный хук (1–2 предложения)
-2. развитие события
-3. значение для музыки / культуры
-4. финал — короткая фраза (как цитата)
+Напиши короткий живой текст для Telegram.
 
 ОГРАНИЧЕНИЯ:
-- максимум 1200 символов
+- не упоминай имя и группу напрямую
 - 4–6 абзацев
-- без слов: "легендарный", "икона", "в истории музыки"
-- не использовать списки
+- без шаблонных фраз
+- эмоциональный, но не пафосный стиль
+- в конце одна короткая сильная фраза (как цитата)
 
-КОНТЕКСТ:
-- Музыкант: {item.get('artist')}
-- Группа: {item.get('group')}
-- Событие: {item.get('event')}
-- Дата: {item.get('date')}
-- Возраст события: {age}
+СОБЫТИЕ:
+Музыкант: {item.get('artist')}
+Группа: {item.get('group')}
+Событие: {item.get('event')}
+Возраст события: {age}
 """
 
     try:
         res = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
-                {"role": "system", "content": "Ты музыкальный журналист и редактор."},
+                {"role": "system", "content": "Ты музыкальный журналист."},
                 {"role": "user", "content": prompt}
             ],
             temperature=1.0,
@@ -192,30 +181,33 @@ def ai_generate(item, age=None):
         return None
 
 # =====================
+# 🌟 ROCK FRAME
+# =====================
+
+def wrap_rock_frame(text):
+
+    return (
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🎸🔥 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b> 🔥🎸\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"{text}\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🎧 <i>Музыка не стареет — она становится историей</i>\n"
+        "━━━━━━━━━━━━━━━━━━━━━━"
+    )
+
+# =====================
 # MESSAGE
 # =====================
 
 def build_message(item, year, age):
 
-    artist = escape(item.get("artist", ""))
-    group = escape(item.get("group", ""))
-    date = escape(item.get("date", ""))
-
     ai_text = ai_generate(item, age)
 
     if not ai_text:
-        ai_text = f"{artist} — {group}"
+        ai_text = "Музыкальное событие, которое осталось в истории."
 
-    footer = "\n\n🎧 <i>Музыка не стареет — она становится историей</i>"
-
-    return (
-        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
-        f"{ai_text}\n\n"
-        f"👤 {artist}\n"
-        f"🎵 {group}\n"
-        f"📅 {date}"
-        f"{footer}"
-    )
+    return wrap_rock_frame(ai_text)
 
 # =====================
 # MAIN
@@ -290,6 +282,6 @@ def check_events():
 # =====================
 
 if __name__ == "__main__":
-    check_bot = lambda: requests.get(API_URL + "/getMe", timeout=10)
-    check_bot()
+    check = requests.get(API_URL + "/getMe", timeout=10)
+    check.raise_for_status()
     check_events()
