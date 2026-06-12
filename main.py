@@ -10,8 +10,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from requests.adapters import HTTPAdapter
 
-from openai import OpenAI
-
 # =====================
 # CONFIG
 # =====================
@@ -23,9 +21,6 @@ OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 if not TOKEN or not CHANNEL_ID:
     raise RuntimeError("Missing TOKEN or CHANNEL_ID")
 
-if not OPENAI_API_KEY:
-    raise RuntimeError("Missing OPENAI_API_KEY")
-
 API_URL = f"https://api.telegram.org/bot{TOKEN}"
 
 DB_FILE = "database.json"
@@ -36,7 +31,21 @@ MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 MAX_RETRIES = 3
 SEND_DELAY = 1
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+# =====================
+# OPENAI (optional safe init)
+# =====================
+
+client = None
+
+if OPENAI_API_KEY:
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+    except Exception as e:
+        logging.error("OpenAI init failed: %s", e)
+        client = None
+else:
+    logging.warning("OPENAI_API_KEY not set — AI disabled")
 
 # =====================
 # SESSION
@@ -68,14 +77,16 @@ def load_sent():
     try:
         with open(SENT_FILE, "r", encoding="utf-8") as f:
             return set(json.load(f))
-    except Exception:
+    except:
         return set()
 
 
 def save_sent(sent):
-    with open(SENT_FILE, "w", encoding="utf-8") as f:
-        json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
-
+    try:
+        with open(SENT_FILE, "w", encoding="utf-8") as f:
+            json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        logging.error("save_sent error: %s", e)
 
 # =====================
 # DATE
@@ -93,16 +104,18 @@ def parse_date(date_str):
 
     return None
 
-
 # =====================
 # TELEGRAM
 # =====================
 
 def check_bot():
-    r = session.get(API_URL + "/getMe", timeout=10)
-    if r.status_code != 200:
-        raise RuntimeError("Invalid bot token")
-    logging.info("Bot OK")
+    try:
+        r = session.get(API_URL + "/getMe", timeout=10)
+        if r.status_code != 200:
+            raise RuntimeError("Invalid bot token")
+        logging.info("Bot OK")
+    except Exception as e:
+        raise RuntimeError(f"Telegram check failed: {e}")
 
 
 def send_message(text):
@@ -129,7 +142,6 @@ def send_message(text):
 
     return False
 
-
 # =====================
 # EVENT ID
 # =====================
@@ -139,30 +151,31 @@ def make_event_id(item, year):
     h = hashlib.sha256(raw.encode("utf-8")).hexdigest()
     return f"{year}_{h}"
 
-
 # =====================
-# AI GENERATION
+# AI GENERATION (SAFE)
 # =====================
 
 def ai_generate(item):
 
+    if client is None:
+        return None
+
     prompt = f"""
-Ты музыкальный редактор (стиль Rolling Stone / Classic Rock).
+Ты музыкальный журналист.
 
-Напиши пост для Telegram.
+Напиши короткий пост (4–7 предложений) для Telegram.
 
-ДАННЫЕ:
+Данные:
 - Музыкант: {item.get('artist')}
 - Группа: {item.get('group')}
 - Событие: {item.get('event')}
 - Дата: {item.get('date')}
 
-ПРАВИЛА:
-- 4–7 предложений
-- стиль: журналистика о музыке
-- без шаблонов и канцелярита
+Требования:
+- стиль музыкальной редакции (Rolling Stone)
+- без шаблонных фраз
 - объясни значение события для музыки
-- живой, но не перегруженный текст
+- живой текст
 """
 
     try:
@@ -173,7 +186,7 @@ def ai_generate(item):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.9,
-            max_tokens=150
+            max_tokens=180
         )
 
         return res.choices[0].message.content.strip()
@@ -181,7 +194,6 @@ def ai_generate(item):
     except Exception as e:
         logging.error("AI error: %s", e)
         return None
-
 
 # =====================
 # MESSAGE
@@ -196,7 +208,7 @@ def build_message(item, year):
     ai_text = ai_generate(item)
 
     if not ai_text:
-        ai_text = f"{artist} — {group}"
+        ai_text = f"{artist} — {group} (музыкальное событие)"
 
     return (
         "🎸 <b>ROCK HISTORY</b>\n\n"
@@ -205,7 +217,6 @@ def build_message(item, year):
         f"🎵 {group}\n"
         f"📅 {date}"
     )
-
 
 # =====================
 # MAIN
@@ -267,7 +278,6 @@ def check_events():
             sent_count += 1
             logging.info("Sent: %s", item.get("artist"))
             time.sleep(SEND_DELAY)
-
         else:
             logging.error("Failed: %s", item.get("artist"))
 
