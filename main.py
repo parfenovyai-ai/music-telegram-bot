@@ -1,168 +1,251 @@
+```python
 import os
 import json
+import time
+import hashlib
+import logging
 import requests
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # =====================
 # CONFIG
 # =====================
+
 TOKEN = (os.getenv("TOKEN") or "").strip()
 CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 
 if not TOKEN or not CHANNEL_ID:
-    print("❌ ERROR: Missing TOKEN or CHANNEL_ID")
-    exit(1)
-
-API_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-TEST_URL = f"https://api.telegram.org/bot{TOKEN}/getMe"
+    raise RuntimeError("TOKEN or CHANNEL_ID is missing")
 
 DB_FILE = "database.json"
 SENT_FILE = "sent.json"
 
+API_URL = f"https://api.telegram.org/bot{TOKEN}"
+
+session = requests.Session()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s"
+)
 
 # =====================
-# TELEGRAM CHECK
+# FILES
 # =====================
-def check_bot():
-    try:
-        r = requests.get(TEST_URL, timeout=10)
-        print("BOT CHECK:", r.status_code, r.text)
 
-        if r.status_code != 200:
-            print("❌ Invalid Telegram token (getMe failed)")
-            exit(1)
-
-    except Exception as e:
-        print("❌ Telegram check error:", e)
-        exit(1)
-
-
-# =====================
-# LOAD DATA
-# =====================
 def load_events():
+
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print("ERROR loading database:", e)
+        logging.error("Database error: %s", e)
         return []
 
 
 def load_sent():
+
     try:
         with open(SENT_FILE, "r", encoding="utf-8") as f:
             return set(json.load(f))
-    except:
+    except Exception:
         return set()
 
 
 def save_sent(sent):
-    try:
-        with open(SENT_FILE, "w", encoding="utf-8") as f:
-            json.dump(list(sent), f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print("ERROR saving sent:", e)
+
+    with open(SENT_FILE, "w", encoding="utf-8") as f:
+        json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
 
 
 # =====================
-# DATE PARSER
+# DATE
 # =====================
+
 def parse_date(date_str):
+
     date_str = date_str.strip()
+
     for fmt in ("%d-%m-%Y", "%d-%m"):
+
         try:
             return datetime.strptime(date_str, fmt).date()
-        except:
-            continue
+
+        except ValueError:
+            pass
+
     return None
 
 
 # =====================
-# TELEGRAM SEND
+# TELEGRAM
 # =====================
+
+def check_bot():
+
+    r = session.get(API_URL + "/getMe", timeout=10)
+
+    if r.status_code != 200:
+        raise RuntimeError("Telegram bot token is invalid")
+
+    logging.info("Bot connected successfully")
+
+
 def send_message(text):
+
     payload = {
         "chat_id": CHANNEL_ID,
         "text": text,
         "parse_mode": "HTML"
     }
 
-    try:
-        r = requests.post(API_URL, data=payload, timeout=10)
-        print("Telegram response:", r.status_code, r.text)
-        return r.status_code == 200
-    except Exception as e:
-        print("Telegram ERROR:", e)
-        return False
+    for attempt in range(3):
+
+        try:
+
+            r = session.post(
+                API_URL + "/sendMessage",
+                data=payload,
+                timeout=15
+            )
+
+            if r.status_code == 200:
+                return True
+
+            logging.warning(
+                "Telegram error %s %s",
+                r.status_code,
+                r.text
+            )
+
+        except Exception as e:
+            logging.warning("Send error: %s", e)
+
+        time.sleep(2)
+
+    return False
 
 
 # =====================
-# MAIN LOGIC
+# EVENT ID
 # =====================
+
+def make_event_id(item):
+
+    return hashlib.sha256(
+
+        json.dumps(
+            item,
+            sort_keys=True,
+            ensure_ascii=False
+        ).encode("utf-8")
+
+    ).hexdigest()
+
+
+# =====================
+# MESSAGE
+# =====================
+
+def build_message(item, current_year):
+
+    text = (
+        "🎸 <b>СЕГОДНЯ В ИСТОРИИ РОКА</b>\n\n"
+        f"👤 <b>{item.get('artist','')}</b>\n"
+        f"🎵 {item.get('group','')}\n\n"
+        f"📖 {item.get('event','')}\n"
+        f"📅 {item.get('date','')}"
+    )
+
+    event_date = parse_date(item.get("date", ""))
+
+    if event_date and event_date.year != 1900:
+
+        age = current_year - event_date.year
+
+        if age > 0 and age % 5 == 0:
+
+            text += f"\n\n🎉 Сегодня юбилей — {age} лет!"
+
+    return text
+
+
+# =====================
+# MAIN
+# =====================
+
 def check_events():
-    now = datetime.now(ZoneInfo("Europe/Moscow"))
-    today_month = now.month
-    today_day = now.day
 
-    print("=== CRON START ===")
-    print("Moscow time:", now)
-    print(f"Today: {today_day:02d}-{today_month:02d}")
+    now = datetime.now(ZoneInfo("Europe/Moscow"))
+
+    logging.info("Current Moscow time: %s", now)
 
     events = load_events()
     sent = load_sent()
 
-    print("Loaded events:", len(events))
-    print("Already sent:", len(sent))
+    events.sort(
+        key=lambda x: (
+            x.get("artist", ""),
+            x.get("group", "")
+        )
+    )
 
+    updated = False
     found = 0
 
+    processed = set()
+
     for item in events:
-        raw_date = item.get("date", "")
-        event_date = parse_date(raw_date)
+
+        event_date = parse_date(item.get("date", ""))
 
         if not event_date:
-            print("SKIP invalid date:", raw_date)
             continue
 
-        # MATCH by day/month only (supports yearly events)
-        if event_date.month != today_month or event_date.day != today_day:
+        if (
+            event_date.day != now.day
+            or event_date.month != now.month
+        ):
             continue
+
+        event_id = make_event_id(item)
+
+        if event_id in processed:
+            continue
+
+        processed.add(event_id)
 
         found += 1
 
-        event_id = f"{item.get('date')}-{item.get('artist')}-{item.get('group')}"
-
         if event_id in sent:
-            print("SKIP already sent:", event_id)
             continue
 
-        text = (
-            "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
-            f"👤 {item.get('artist', 'Unknown')}\n"
-            f"🎵 {item.get('group', 'Unknown')}\n"
-            f"📅 {item.get('event', 'Unknown')}\n"
-            f"🗓 {item.get('date', '')}"
-        )
+        message = build_message(item, now.year)
 
-        if send_message(text):
+        if send_message(message):
+
+            logging.info(
+                "Sent: %s",
+                item.get("artist")
+            )
+
             sent.add(event_id)
-            save_sent(sent)
-            print("SENT:", event_id)
-        else:
-            print("FAILED:", event_id)
+            updated = True
 
-    if found == 0:
-        print("No events for today")
+    if updated:
+        save_sent(sent)
 
-    print("=== CRON END ===")
+    logging.info("Today's events: %s", found)
 
 
 # =====================
-# ENTRYPOINT
+# ENTRY
 # =====================
+
 if __name__ == "__main__":
-    print("TOKEN START:", TOKEN[:10])
+
     check_bot()
     check_events()
+```
