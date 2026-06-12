@@ -173,7 +173,7 @@ def ai_generate(item):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.9,
-            max_tokens=50
+            max_tokens=150
         )
 
         return res.choices[0].message.content.strip()
