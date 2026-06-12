@@ -197,11 +197,14 @@ def ai_generate(item):
 
 def build_header(item):
     return (
-        "🎸🔥 РОК-СОБЫТИЕ СЕГОДНЯ 🔥🎸\n\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        "🎸 РОК-СОБЫТИЕ СЕГОДНЯ\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"👤 {item.get('artist','—')}\n"
         f"🎵 {item.get('group','—')}\n"
         f"📅 {item.get('event','—')}\n"
         f"🗓 {item.get('date','—')}\n"
+        "━━━━━━━━━━━━━━━━━━━━━━\n"
     )
 
 # =====================
