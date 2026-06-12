@@ -6,7 +6,6 @@ import logging
 import requests
 import random
 
-from html import escape
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from requests.adapters import HTTPAdapter
@@ -46,75 +45,29 @@ ROCK_PHRASES = [
     "Один звук может изменить целую эпоху",
     "Музыка — это память, которая умеет звучать",
 
-    "Пусть кровь и сталь решат, где правда и где страх",
-    "Я выбираю путь, где нет пути назад",
-    "Город сгорел, но память не сгорела",
-    "Мы дети грома — нас не удержит тишина",
-    "Время не лечит, оно лишь шрамирует душу",
-    "Сквозь дым и пепел слышен голос судьбы",
-    "Я слышу крик гитар в холодной пустоте",
-    "Пока горит огонь — мы не станем прахом",
-    "Нет света без тьмы, нет веры без боли",
-    "Сталь не предаёт, предают только люди",
-    "Наши песни тяжелее любых оков",
-    "Когда молчит небо — говорит металл",
-    "Мы идём сквозь ад, но не просим пощады",
-    "Каждый аккорд — как удар судьбы",
-    "И даже тьма склоняется перед звуком",
-    "Между светом и тьмой я выбираю гром",
-    "Судьба играет риффами на костях времени",
-    "Мы выжили там, где молчит даже надежда",
-    "Пепел прошлого поёт в моих венах",
     "Где заканчивается страх — начинается металл",
-    "Я слышу вечность в перегруженных струнах",
-    "Мир трещит, но гитара держит небо",
-    "Мы не ангелы — мы те, кто остался в огне",
-    "Холод стали заменяет нам молитвы",
-    "Каждый аккорд — как удар молота судьбы",
-    "Там, где падают города, рождается звук",
-    "Мы не просим прощения у тишины",
-    "Вой ветра звучит как старый рифф",
-    "Сквозь кровь и снег идёт наш голос",
-    "Нет дороги назад, есть только вперёд",
-    "Металл в душе тяжелее любых цепей",
-    "Мы пишем историю шрамами на гитаре",
-    "Пусть мир сгорит — мы сыграем до конца",
-    "Я живу на границе света и разрушения",
-    "В каждом ударе барабанов — дыхание войны",
-    "Небо рвётся под весом наших аккордов",
-    "Тьма учит нас звучать громче света",
-    "Мы — эхо тех, кто не вернулся",
-    "Риффы режут ночь, как клинки",
-    "Память звучит тяжелее стали",
-    "Сломанные крылья не мешают летать в огне",
-    "Мы дети пепла и перегруженных усилителей",
-    "Время не лечит — оно усиливает боль",
-    "Каждый концерт — это маленький конец света",
-    "Мы поём там, где заканчиваются молитвы",
-    "Стены дрожат от правды в наших песнях",
-    "Гитары говорят то, что молчит человек",
-    "Мы не боимся тишины — мы её ломаем",
-    "Осколки света режут тьму внутри нас",
-    "Наш путь — это звук без возврата",
-    "Металл живёт там, где умирает страх",
-    "Я слышу судьбу в перегруженном усилителе",
+    "Каждый аккорд — как удар судьбы",
     "Мы не герои — мы свидетели огня",
-    "Город спит, но сцена дышит",
-    "Сломанные мечты звучат громче реальности",
-    "Мы идём сквозь бурю на одной ноте",
+    "Металл живёт там, где умирает страх",
     "Рок не умирает — он становится шрамом",
-    "Каждая струна — это нерв эпохи",
-    "Мы танцуем на руинах старого мира",
-    "Где нет надежды — начинается соло",
-    "Наши песни тяжелее времени",
-    "Мы слышим правду в искажении звука",
-    "Металл — это язык выживших",
     "И даже тишина боится перегруза",
-    "Мы не исчезаем — мы превращаемся в звук"
 ]
 
+last_phrase = None
+
+def get_phrase():
+    global last_phrase
+
+    phrase = random.choice(ROCK_PHRASES)
+
+    while phrase == last_phrase and len(ROCK_PHRASES) > 1:
+        phrase = random.choice(ROCK_PHRASES)
+
+    last_phrase = phrase
+    return phrase
+
 # =====================
-# OPENAI (optional)
+# OPENAI
 # =====================
 
 client = None
@@ -146,10 +99,8 @@ logging.basicConfig(
 def load_events():
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except Exception as e:
-        logging.error("DB error: %s", e)
+            return json.load(f)
+    except:
         return []
 
 
@@ -162,11 +113,8 @@ def load_sent():
 
 
 def save_sent(sent):
-    try:
-        with open(SENT_FILE, "w", encoding="utf-8") as f:
-            json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        logging.error("save_sent error: %s", e)
+    with open(SENT_FILE, "w", encoding="utf-8") as f:
+        json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
 
 # =====================
 # DATE
@@ -189,7 +137,6 @@ def parse_date(date_str):
 # =====================
 
 def send_message(text):
-
     payload = {
         "chat_id": CHANNEL_ID,
         "text": text,
@@ -198,11 +145,11 @@ def send_message(text):
 
     for _ in range(MAX_RETRIES):
         try:
-            r = session.post(API_URL + "/sendMessage", data=payload, timeout=15)
+            r = requests.post(API_URL + "/sendMessage", data=payload, timeout=15)
             if r.status_code == 200:
                 return True
-        except Exception as e:
-            logging.warning("Telegram error: %s", e)
+        except:
+            pass
 
         time.sleep(2)
 
@@ -214,8 +161,7 @@ def send_message(text):
 
 def make_event_id(item, year):
     raw = json.dumps(item, ensure_ascii=False, sort_keys=True)
-    h = hashlib.sha256(raw.encode("utf-8")).hexdigest()
-    return f"{year}_{h}"
+    return f"{year}_{hashlib.sha256(raw.encode()).hexdigest()}"
 
 # =====================
 # AI GENERATION
@@ -229,20 +175,21 @@ def ai_generate(item, age=None):
     prompt = f"""
 Ты редактор музыкального медиа уровня Rolling Stone / Kerrang.
 
-Напиши короткий живой текст для Telegram.
+ВАЖНО:
+- НЕ используй имя, фамилию, название группы
+- НЕ упоминай их вообще
+- пиши абстрактно ("музыкант", "группа")
 
-ПРАВИЛА:
+СТИЛЬ:
+- живой музыкальный текст
 - 4–6 абзацев
-- без упоминания имени и группы напрямую
-- эмоционально, но без пафоса
-- стиль музыкальной журналистики
-- в конце одна сильная короткая фраза
+- без шаблонов
+- финальная короткая сильная фраза
 
 СОБЫТИЕ:
-Музыкант: {item.get('artist')}
-Группа: {item.get('group')}
+Субъект: музыкант / группа
 Событие: {item.get('event')}
-Возраст события: {age}
+Возраст: {age}
 """
 
     try:
@@ -258,21 +205,19 @@ def ai_generate(item, age=None):
 
         return res.choices[0].message.content.strip()
 
-    except Exception as e:
-        logging.error("AI error: %s", e)
+    except:
         return None
 
 # =====================
-# 🎸 ROCK FRAME
+# FRAME
 # =====================
 
-def wrap_rock_frame(text):
-
-    phrase = random.choice(ROCK_PHRASES)
+def wrap_frame(text):
+    phrase = get_phrase()
 
     return (
         "━━━━━━━━━━━━━━━━━━━━━━\n"
-        "🎸🔥 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b> 🔥🎸\n"
+        "🎸🔥 <b>ROCK HISTORY</b> 🔥🎸\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n\n"
         f"{text}\n\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n"
@@ -286,12 +231,12 @@ def wrap_rock_frame(text):
 
 def build_message(item, year, age):
 
-    ai_text = ai_generate(item, age)
+    text = ai_generate(item, age)
 
-    if not ai_text:
-        ai_text = "Музыкальное событие, которое оставило след в истории."
+    if not text:
+        text = "Музыкальное событие оставило след в истории."
 
-    return wrap_rock_frame(ai_text)
+    return wrap_frame(text)
 
 # =====================
 # MAIN
@@ -302,8 +247,6 @@ def check_events():
     now = datetime.now(MOSCOW_TZ)
     year = now.year
 
-    logging.info("Start: %s", now)
-
     events = load_events()
     sent = load_sent()
 
@@ -313,9 +256,6 @@ def check_events():
 
     found = 0
     sent_count = 0
-    skipped = 0
-
-    events.sort(key=lambda x: (x.get("artist", ""), x.get("group", "")))
 
     for item in events:
 
@@ -327,44 +267,30 @@ def check_events():
         if event_date.day != now.day or event_date.month != now.month:
             continue
 
-        age = year - event_date.year if event_date else None
-
-        found += 1
+        age = year - event_date.year
 
         event_id = make_event_id(item, year)
 
-        if event_id in processed:
+        if event_id in processed or event_id in sent:
             continue
 
         processed.add(event_id)
-
-        if event_id in sent:
-            skipped += 1
-            continue
 
         text = build_message(item, year, age)
 
         if send_message(text):
             sent.add(event_id)
             sent_count += 1
-            logging.info("Sent: %s", item.get("artist"))
             time.sleep(SEND_DELAY)
-        else:
-            logging.error("Failed: %s", item.get("artist"))
 
     save_sent(sent)
 
-    logging.info("=======================")
-    logging.info("Found   : %s", found)
-    logging.info("Sent    : %s", sent_count)
-    logging.info("Skipped : %s", skipped)
-    logging.info("=======================")
-
+    print("Found:", found)
+    print("Sent:", sent_count)
 
 # =====================
 # ENTRY
 # =====================
 
 if __name__ == "__main__":
-    requests.get(API_URL + "/getMe", timeout=10)
     check_events()
