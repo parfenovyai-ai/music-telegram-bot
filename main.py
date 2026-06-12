@@ -200,11 +200,11 @@ def build_header(item):
         "━━━━━━━━━━━━━━━━━━━━━━\n"
         "🎸 РОК-СОБЫТИЕ СЕГОДНЯ\n"
         "━━━━━━━━━━━━━━━━━━━━━━\n\n"
-        f"👤 {item.get('artist','—')}\n"
-        f"🎵 {item.get('group','—')}\n"
-        f"📅 {item.get('event','—')}\n"
-        f"🗓 {item.get('date','—')}\n"
-        "━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 {g(item, 'artist', 'name', 'имя')}\n"
+        f"🎵 {g(item, 'group', 'band', 'группа')}\n"
+        f"📅 {g(item, 'event', 'type', 'событие')}\n"
+        f"🗓 {g(item, 'date')}\n"
+        "━━━━━━━━━━━━━━━━━━━━━━"
     )
 
 # =====================
