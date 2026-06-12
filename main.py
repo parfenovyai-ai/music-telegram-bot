@@ -19,7 +19,7 @@ CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 
 if not TOKEN or not CHANNEL_ID:
-    raise RuntimeError("Missing TOKEN or CHANNEL_ID")
+    raise RuntimeError("Missing BOT_TOKEN or CHANNEL_ID")
 
 API_URL = f"https://api.telegram.org/bot{TOKEN}"
 
