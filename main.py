@@ -1,3 +1,4 @@
+```python
 import os
 import json
 import time
@@ -8,6 +9,9 @@ import requests
 from html import escape
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from requests.adapters import HTTPAdapter
+
+from openai import OpenAI
 
 # =====================
 # CONFIG
@@ -15,16 +19,32 @@ from zoneinfo import ZoneInfo
 
 TOKEN = (os.getenv("TOKEN") or "").strip()
 CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
+OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 
 if not TOKEN or not CHANNEL_ID:
-    raise RuntimeError("TOKEN or CHANNEL_ID is missing")
+    raise RuntimeError("Missing TOKEN or CHANNEL_ID")
+
+if not OPENAI_API_KEY:
+    raise RuntimeError("Missing OPENAI_API_KEY")
+
+API_URL = f"https://api.telegram.org/bot{TOKEN}"
 
 DB_FILE = "database.json"
 SENT_FILE = "sent.json"
 
-API_URL = f"https://api.telegram.org/bot{TOKEN}"
+MOSCOW_TZ = ZoneInfo("Europe/Moscow")
+
+MAX_RETRIES = 3
+SEND_DELAY = 1
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# =====================
+# SESSION
+# =====================
 
 session = requests.Session()
+session.mount("https://", HTTPAdapter(pool_connections=10, pool_maxsize=10))
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,9 +58,10 @@ logging.basicConfig(
 def load_events():
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+            return data if isinstance(data, list) else []
     except Exception as e:
-        logging.error("Database loading error: %s", e)
+        logging.error("DB error: %s", e)
         return []
 
 
@@ -62,13 +83,13 @@ def save_sent(sent):
 # =====================
 
 def parse_date(date_str):
-
-    date_str = date_str.strip()
+    if not date_str:
+        return None
 
     for fmt in ("%d-%m-%Y", "%d-%m"):
         try:
-            return datetime.strptime(date_str, fmt).date()
-        except ValueError:
+            return datetime.strptime(date_str.strip(), fmt).date()
+        except:
             continue
 
     return None
@@ -79,13 +100,10 @@ def parse_date(date_str):
 # =====================
 
 def check_bot():
-
     r = session.get(API_URL + "/getMe", timeout=10)
-
     if r.status_code != 200:
-        raise RuntimeError("Telegram token is invalid")
-
-    logging.info("Telegram bot connected")
+        raise RuntimeError("Invalid bot token")
+    logging.info("Bot OK")
 
 
 def send_message(text):
@@ -96,24 +114,17 @@ def send_message(text):
         "parse_mode": "HTML"
     }
 
-    for _ in range(3):
-
+    for _ in range(MAX_RETRIES):
         try:
-
-            r = session.post(
-                API_URL + "/sendMessage",
-                data=payload,
-                timeout=15
-            )
+            r = session.post(API_URL + "/sendMessage", data=payload, timeout=15)
 
             if r.status_code == 200:
                 return True
 
-            logging.warning("%s %s", r.status_code, r.text)
+            logging.warning("Telegram error %s %s", r.status_code, r.text)
 
         except Exception as e:
-
-            logging.warning(e)
+            logging.warning("Telegram exception: %s", e)
 
         time.sleep(2)
 
@@ -125,72 +136,76 @@ def send_message(text):
 # =====================
 
 def make_event_id(item, year):
+    raw = json.dumps(item, ensure_ascii=False, sort_keys=True)
+    h = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+    return f"{year}_{h}"
 
-    event_hash = hashlib.sha256(
 
-        json.dumps(
-            item,
-            ensure_ascii=False,
-            sort_keys=True
-        ).encode("utf-8")
+# =====================
+# AI GENERATION
+# =====================
 
-    ).hexdigest()
+def ai_generate(item):
 
-    return f"{year}_{event_hash}"
+    prompt = f"""
+Ты музыкальный редактор (стиль Rolling Stone / Classic Rock).
+
+Напиши пост для Telegram.
+
+ДАННЫЕ:
+- Музыкант: {item.get('artist')}
+- Группа: {item.get('group')}
+- Событие: {item.get('event')}
+- Дата: {item.get('date')}
+
+ПРАВИЛА:
+- 4–7 предложений
+- стиль: журналистика о музыке
+- без шаблонов и канцелярита
+- объясни значение события для музыки
+- живой, но не перегруженный текст
+"""
+
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "Ты музыкальный журналист."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.9,
+            max_tokens=50
+        )
+
+        return res.choices[0].message.content.strip()
+
+    except Exception as e:
+        logging.error("AI error: %s", e)
+        return None
 
 
 # =====================
 # MESSAGE
 # =====================
 
-def build_message(item, current_year):
+def build_message(item, year):
 
     artist = escape(item.get("artist", ""))
     group = escape(item.get("group", ""))
-    event = escape(item.get("event", ""))
     date = escape(item.get("date", ""))
 
-    text = (
-        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
-        f"👤 <b>{artist}</b>\n"
+    ai_text = ai_generate(item)
+
+    if not ai_text:
+        ai_text = f"{artist} — {group}"
+
+    return (
+        "🎸 <b>ROCK HISTORY</b>\n\n"
+        f"{ai_text}\n\n"
+        f"👤 {artist}\n"
         f"🎵 {group}\n"
-        f"📖 {event}\n"
-        f"🗓 {date}"
+        f"📅 {date}"
     )
-
-    event_date = parse_date(item.get("date", ""))
-
-    death_words = (
-        "умер",
-        "умерла",
-        "скончался",
-        "скончалась",
-        "погиб",
-        "погибла",
-        "смерть"
-    )
-
-    is_death = any(
-        word in item.get("event", "").lower()
-        for word in death_words
-    )
-
-    if (
-        event_date
-        and event_date.year != 1900
-        and not is_death
-    ):
-
-        age = current_year - event_date.year
-
-        if age > 0 and age % 5 == 0:
-
-            text += (
-                f"\n\n🎉 <b>Сегодня исполняется "
-                f"{age} лет этому событию!</b>"
-            )
-
-    return text
 
 
 # =====================
@@ -199,58 +214,43 @@ def build_message(item, current_year):
 
 def check_events():
 
-    now = datetime.now(
-        ZoneInfo("Europe/Moscow")
-    )
+    start = time.perf_counter()
 
-    current_year = now.year
+    now = datetime.now(MOSCOW_TZ)
+    year = now.year
 
-    logging.info("Current Moscow time: %s", now)
+    logging.info("Start: %s", now)
 
     events = load_events()
     sent = load_sent()
 
-    # автоматически удаляем записи прошлых лет
+    if not isinstance(events, list):
+        return
 
-    sent = {
-        x
-        for x in sent
-        if x.startswith(f"{current_year}_")
-    }
+    # чистим старые годы
+    sent = {x for x in sent if x.startswith(f"{year}_")}
 
     processed = set()
-    updated = False
-
-    events.sort(
-        key=lambda x: (
-            x.get("artist", ""),
-            x.get("group", "")
-        )
-    )
 
     found = 0
+    sent_count = 0
+    skipped = 0
+
+    events.sort(key=lambda x: (x.get("artist", ""), x.get("group", "")))
 
     for item in events:
 
-        event_date = parse_date(
-            item.get("date", "")
-        )
+        event_date = parse_date(item.get("date", ""))
 
         if not event_date:
             continue
 
-        if (
-            event_date.day != now.day
-            or event_date.month != now.month
-        ):
+        if event_date.day != now.day or event_date.month != now.month:
             continue
 
         found += 1
 
-        event_id = make_event_id(
-            item,
-            current_year
-        )
+        event_id = make_event_id(item, year)
 
         if event_id in processed:
             continue
@@ -258,37 +258,28 @@ def check_events():
         processed.add(event_id)
 
         if event_id in sent:
+            skipped += 1
             continue
 
-        message = build_message(
-            item,
-            current_year
-        )
+        text = build_message(item, year)
 
-        if send_message(message):
-
-            logging.info(
-                "Sent: %s",
-                item.get("artist")
-            )
-
+        if send_message(text):
             sent.add(event_id)
-            updated = True
+            sent_count += 1
+            logging.info("Sent: %s", item.get("artist"))
+            time.sleep(SEND_DELAY)
 
         else:
+            logging.error("Failed: %s", item.get("artist"))
 
-            logging.error(
-                "Failed: %s",
-                item.get("artist")
-            )
+    save_sent(sent)
 
-    if updated:
-        save_sent(sent)
-
-    logging.info(
-        "Today's events found: %s",
-        found
-    )
+    logging.info("=======================")
+    logging.info("Found   : %s", found)
+    logging.info("Sent    : %s", sent_count)
+    logging.info("Skipped : %s", skipped)
+    logging.info("Time    : %.2f sec", time.perf_counter() - start)
+    logging.info("=======================")
 
 
 # =====================
@@ -296,15 +287,6 @@ def check_events():
 # =====================
 
 if __name__ == "__main__":
-
-    logging.info(
-        "========== BOT START =========="
-    )
-
     check_bot()
-
     check_events()
-
-    logging.info(
-        "========== BOT END =========="
-    )
+```
