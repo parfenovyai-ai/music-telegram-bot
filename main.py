@@ -32,7 +32,7 @@ MAX_RETRIES = 3
 SEND_DELAY = 1
 
 # =====================
-# OPENAI (optional safe init)
+# OPENAI (optional)
 # =====================
 
 client = None
@@ -44,8 +44,6 @@ if OPENAI_API_KEY:
     except Exception as e:
         logging.error("OpenAI init failed: %s", e)
         client = None
-else:
-    logging.warning("OPENAI_API_KEY not set — AI disabled")
 
 # =====================
 # SESSION
@@ -108,18 +106,7 @@ def parse_date(date_str):
 # TELEGRAM
 # =====================
 
-def check_bot():
-    try:
-        r = session.get(API_URL + "/getMe", timeout=10)
-        if r.status_code != 200:
-            raise RuntimeError("Invalid bot token")
-        logging.info("Bot OK")
-    except Exception as e:
-        raise RuntimeError(f"Telegram check failed: {e}")
-
-
 def send_message(text):
-
     payload = {
         "chat_id": CHANNEL_ID,
         "text": text,
@@ -129,14 +116,10 @@ def send_message(text):
     for _ in range(MAX_RETRIES):
         try:
             r = session.post(API_URL + "/sendMessage", data=payload, timeout=15)
-
             if r.status_code == 200:
                 return True
-
-            logging.warning("Telegram error %s %s", r.status_code, r.text)
-
         except Exception as e:
-            logging.warning("Telegram exception: %s", e)
+            logging.warning("Telegram error: %s", e)
 
         time.sleep(2)
 
@@ -152,41 +135,54 @@ def make_event_id(item, year):
     return f"{year}_{h}"
 
 # =====================
-# AI GENERATION (SAFE)
+# AI GENERATION (IMPROVED)
 # =====================
 
-def ai_generate(item):
+def ai_generate(item, age=None):
 
     if client is None:
         return None
 
     prompt = f"""
-Ты музыкальный журналист.
+Ты редактор музыкального медиа уровня Rolling Stone / Kerrang.
 
-Напиши короткий пост (4–7 предложений) для Telegram.
+ЗАДАЧА:
+Напиши короткий, живой пост для Telegram о музыкальном событии.
 
-Данные:
+СТИЛЬ:
+- как колонка музыкального журнала
+- живо, эмоционально, без пафоса
+- ритмичный текст
+
+СТРУКТУРА:
+1. сильный хук (1–2 предложения)
+2. развитие события
+3. значение для музыки / культуры
+4. финал — короткая фраза (как цитата)
+
+ОГРАНИЧЕНИЯ:
+- максимум 1200 символов
+- 4–6 абзацев
+- без слов: "легендарный", "икона", "в истории музыки"
+- не использовать списки
+
+КОНТЕКСТ:
 - Музыкант: {item.get('artist')}
 - Группа: {item.get('group')}
 - Событие: {item.get('event')}
 - Дата: {item.get('date')}
-
-Требования:
-- стиль музыкальной редакции (Rolling Stone)
-- без шаблонных фраз
-- объясни значение события для музыки
-- живой текст
+- Возраст события: {age}
 """
 
     try:
         res = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
-                {"role": "system", "content": "Ты музыкальный журналист."},
+                {"role": "system", "content": "Ты музыкальный журналист и редактор."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.9,
-            max_tokens=250
+            temperature=1.0,
+            max_tokens=300
         )
 
         return res.choices[0].message.content.strip()
@@ -199,16 +195,18 @@ def ai_generate(item):
 # MESSAGE
 # =====================
 
-def build_message(item, year):
+def build_message(item, year, age):
 
     artist = escape(item.get("artist", ""))
     group = escape(item.get("group", ""))
     date = escape(item.get("date", ""))
 
-    ai_text = ai_generate(item)
+    ai_text = ai_generate(item, age)
 
     if not ai_text:
-        ai_text = f"{artist} — {group} (музыкальное событие)"
+        ai_text = f"{artist} — {group}"
+
+    footer = "\n\n🎧 <i>Музыка не стареет — она становится историей</i>"
 
     return (
         "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
@@ -216,6 +214,7 @@ def build_message(item, year):
         f"👤 {artist}\n"
         f"🎵 {group}\n"
         f"📅 {date}"
+        f"{footer}"
     )
 
 # =====================
@@ -223,8 +222,6 @@ def build_message(item, year):
 # =====================
 
 def check_events():
-
-    start = time.perf_counter()
 
     now = datetime.now(MOSCOW_TZ)
     year = now.year
@@ -234,10 +231,6 @@ def check_events():
     events = load_events()
     sent = load_sent()
 
-    if not isinstance(events, list):
-        return
-
-    # чистим старые годы
     sent = {x for x in sent if x.startswith(f"{year}_")}
 
     processed = set()
@@ -258,6 +251,8 @@ def check_events():
         if event_date.day != now.day or event_date.month != now.month:
             continue
 
+        age = year - event_date.year if event_date else None
+
         found += 1
 
         event_id = make_event_id(item, year)
@@ -271,7 +266,7 @@ def check_events():
             skipped += 1
             continue
 
-        text = build_message(item, year)
+        text = build_message(item, year, age)
 
         if send_message(text):
             sent.add(event_id)
@@ -287,7 +282,6 @@ def check_events():
     logging.info("Found   : %s", found)
     logging.info("Sent    : %s", sent_count)
     logging.info("Skipped : %s", skipped)
-    logging.info("Time    : %.2f sec", time.perf_counter() - start)
     logging.info("=======================")
 
 
@@ -296,5 +290,6 @@ def check_events():
 # =====================
 
 if __name__ == "__main__":
+    check_bot = lambda: requests.get(API_URL + "/getMe", timeout=10)
     check_bot()
     check_events()
