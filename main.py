@@ -17,12 +17,12 @@ TOKEN = (os.getenv("TOKEN") or "").strip()
 CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 
 if not TOKEN or not CHANNEL_ID:
-    raise RuntimeError("TOKEN or CHANNEL_ID is missing")
+    raise RuntimeError("TOKEN or CHANNEL_ID not specified")
+
+API_URL = f"https://api.telegram.org/bot{TOKEN}"
 
 DB_FILE = "database.json"
 SENT_FILE = "sent.json"
-
-API_URL = f"https://api.telegram.org/bot{TOKEN}"
 
 session = requests.Session()
 
@@ -36,17 +36,15 @@ logging.basicConfig(
 # =====================
 
 def load_events():
-
     try:
         with open(DB_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        logging.error("Database error: %s", e)
+        logging.error("Database loading error: %s", e)
         return []
 
 
 def load_sent():
-
     try:
         with open(SENT_FILE, "r", encoding="utf-8") as f:
             return set(json.load(f))
@@ -55,7 +53,6 @@ def load_sent():
 
 
 def save_sent(sent):
-
     with open(SENT_FILE, "w", encoding="utf-8") as f:
         json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
 
@@ -69,12 +66,10 @@ def parse_date(date_str):
     date_str = date_str.strip()
 
     for fmt in ("%d-%m-%Y", "%d-%m"):
-
         try:
             return datetime.strptime(date_str, fmt).date()
-
         except ValueError:
-            pass
+            continue
 
     return None
 
@@ -88,9 +83,9 @@ def check_bot():
     r = session.get(API_URL + "/getMe", timeout=10)
 
     if r.status_code != 200:
-        raise RuntimeError("Telegram bot token is invalid")
+        raise RuntimeError("Invalid Telegram bot token")
 
-    logging.info("Bot connected successfully")
+    logging.info("Telegram bot connected")
 
 
 def send_message(text):
@@ -121,7 +116,8 @@ def send_message(text):
             )
 
         except Exception as e:
-            logging.warning("Send error: %s", e)
+
+            logging.warning("Telegram exception: %s", e)
 
         time.sleep(2)
 
@@ -138,8 +134,8 @@ def make_event_id(item):
 
         json.dumps(
             item,
-            sort_keys=True,
-            ensure_ascii=False
+            ensure_ascii=False,
+            sort_keys=True
         ).encode("utf-8")
 
     ).hexdigest()
@@ -152,22 +148,42 @@ def make_event_id(item):
 def build_message(item, current_year):
 
     text = (
-        "🎸 <b>СЕГОДНЯ В ИСТОРИИ РОКА</b>\n\n"
-        f"👤 <b>{item.get('artist','')}</b>\n"
-        f"🎵 {item.get('group','')}\n\n"
-        f"📖 {item.get('event','')}\n"
-        f"📅 {item.get('date','')}"
+        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
+        f"👤 <b>{item.get('artist', '')}</b>\n"
+        f"🎵 {item.get('group', '')}\n"
+        f"📖 {item.get('event', '')}\n"
+        f"🗓 {item.get('date', '')}"
     )
 
     event_date = parse_date(item.get("date", ""))
+    event_text = item.get("event", "").lower()
 
-    if event_date and event_date.year != 1900:
+    death_words = (
+        "умер",
+        "умерла",
+        "скончался",
+        "скончалась",
+        "погиб",
+        "погибла",
+        "смерть"
+    )
+
+    is_death = any(word in event_text for word in death_words)
+
+    if (
+        event_date
+        and event_date.year != 1900
+        and not is_death
+    ):
 
         age = current_year - event_date.year
 
         if age > 0 and age % 5 == 0:
 
-            text += f"\n\n🎉 Сегодня юбилей — {age} лет!"
+            text += (
+                f"\n\n🎉 <b>Сегодня исполняется "
+                f"{age} лет этому событию!</b>"
+            )
 
     return text
 
@@ -185,6 +201,9 @@ def check_events():
     events = load_events()
     sent = load_sent()
 
+    processed = set()
+    updated = False
+
     events.sort(
         key=lambda x: (
             x.get("artist", ""),
@@ -192,10 +211,7 @@ def check_events():
         )
     )
 
-    updated = False
-    found = 0
-
-    processed = set()
+    today_found = 0
 
     for item in events:
 
@@ -210,6 +226,8 @@ def check_events():
         ):
             continue
 
+        today_found += 1
+
         event_id = make_event_id(item)
 
         if event_id in processed:
@@ -217,12 +235,17 @@ def check_events():
 
         processed.add(event_id)
 
-        found += 1
-
         if event_id in sent:
+            logging.info(
+                "Already sent: %s",
+                item.get("artist")
+            )
             continue
 
-        message = build_message(item, now.year)
+        message = build_message(
+            item,
+            now.year
+        )
 
         if send_message(message):
 
@@ -234,18 +257,32 @@ def check_events():
             sent.add(event_id)
             updated = True
 
+        else:
+
+            logging.error(
+                "Failed: %s",
+                item.get("artist")
+            )
+
     if updated:
         save_sent(sent)
 
-    logging.info("Today's events: %s", found)
+    logging.info(
+        "Today's events: %s",
+        today_found
+    )
 
 
 # =====================
-# ENTRY
+# ENTRY POINT
 # =====================
 
 if __name__ == "__main__":
 
+    logging.info("===== BOT STARTED =====")
+
     check_bot()
     check_events()
+
+    logging.info("===== BOT FINISHED =====")
 ```
