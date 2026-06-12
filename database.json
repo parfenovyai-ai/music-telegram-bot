@@ -1,19 +1,7 @@
 [
-
+  
 {
-"date": "01-01-1980", "artist": "Легион", "group": "Легион", "event": "Формирование группы (ранний советский/российский метал)"},
-
-{"date": "01-01-1996", "artist": "Catharsis", "group": "Catharsis", "event": "Основание группы в Москве"},
-
-{"date": "01-01-1997", "artist": "Сергей Маврин", "group": "Маврин", "event": "Начало проекта «Маврик» (ранний этап)"},
-
-{"date": "01-01-2002", "artist": "Артур Беркут", "group": "Ария / сольный проект", "event": "Переход к сольной активности после Арии (период)"},
-
-{"date": "01-01-2003", "artist": "Артерия", "group": "Артерия", "event": "Основание группы Сергеем Терентьевым"},
-
-{"date": "01-01-2004", "artist": "Гран-КуражЪ", "group": "Гран-КуражЪ", "event": "Основание группы"},
-
-{"date": "01-01-1980", "artist": "Richie Faulkner", "group": "Judas Priest", "event": "Родился😊"},
+  "date": "01-01-1980", "artist": "Richie Faulkner", "group": "Judas Priest", "event": "Родился😊"},
 
 {"date": "02-01-1946", "artist": "John Paul Jones", "group": "Led Zeppelin", "event": "Родился😊"},
 
@@ -521,7 +509,7 @@
 
 {"date": "16-06-1952", "artist": "Gino Vannelli", "group": "Solo", "event": "Родился😊"},
 
-{"date": "16-06-1972", "artist": "Kiko Loureiro", "group": Megadeth", "event": "Родился😊"},
+{"date": "16-06-1972", "artist": "Kiko Loureiro", "group": "Megadeth", "event": "Родился😊"},
 
 {"date": "16-06-1966", "artist": "Максим Удалов", "group": "Ария", "event": "Родился😊"},
 
@@ -580,7 +568,7 @@
 
 {"date": "13-07-1954", "artist": "Roger McGuinn", "group": "The Byrds", "event": "Родился😊"},
 
-{"date": "14-07-1999", "artist": "Gar Samuelson", "group": Megadeth", "event": "Умер😢"},
+{"date": "14-07-1999", "artist": "Gar Samuelson", "group": "Megadeth", "event": "Умер😢"},
 
 {"date": "15-07-1956", "artist": "Ian Curtis", "group": "Joy Division", "event": "Родился😊"},
 
@@ -608,7 +596,7 @@
 
 {"date": "23-07-1965", "artist": "Slash", "group": "Guns N’ Roses", "event": "Родился😊"},
 
-{"date": "23-07-1964", "artist": "Nick Menza", "group": Megadeth", "event": "Родился😊"},
+{"date": "23-07-1964", "artist": "Nick Menza", "group": "Megadeth", "event": "Родился😊"},
   
 {"date": "25-07-1952", "artist": "Jim McCarty", "group": "The Yardbirds", "event": "Родился😊"},
 
@@ -920,7 +908,7 @@
 
 {"date": "12-11-1945", "artist": "Neil Young", "group": "Crosby, Stills, Nash & Young", "event": "Родился😊"},
 
-{"date": "12-11-1964", "artist": "David Ellefson", "group": Megadeth", "event": "Родился😊"},
+{"date": "12-11-1964", "artist": "David Ellefson", "group": "Megadeth", "event": "Родился😊"},
 
 {"date": "13-11-1949", "artist": "Jimmy Kimmel", "group": "Solo", "event": "Родился😊 (рок-культура влияние)"},
 
@@ -989,7 +977,7 @@
 
 {"date": "08-12-1943", "artist": "Jim Morrison", "group": "The Doors", "event": "Родился😊"},
 
-{"date": "08-12-1962", "artist": "Marty Friedman", "group": Megadeth", "event": "Родился😊"},
+{"date": "08-12-1962", "artist": "Marty Friedman", "group": "Megadeth", "event": "Родился😊"},
 
 {"date": "08-12-1973", "artist": "Corey Taylor", "group": "Slipknot", "event": "Родился😊"},
 
