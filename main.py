@@ -211,7 +211,7 @@ def build_message(item, year):
         ai_text = f"{artist} — {group} (музыкальное событие)"
 
     return (
-        "🎸 <b>ROCK HISTORY</b>\n\n"
+        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
         f"{ai_text}\n\n"
         f"👤 {artist}\n"
         f"🎵 {group}\n"
