@@ -1,31 +1,34 @@
-name: Telegram Bot Cron
+```yaml id="ghwf1"
+name: Rock History Bot
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "0 10 * * *"   # каждый день в 10:00 UTC
   workflow_dispatch:
 
 jobs:
-  run:
+  run-bot:
     runs-on: ubuntu-latest
 
+    env:
+      TOKEN: ${{ secrets.TOKEN }}
+      CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests openai
 
       - name: Run bot
-        env:
-          TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
         run: python main.py
+```
