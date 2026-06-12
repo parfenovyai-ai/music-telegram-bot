@@ -33,92 +33,31 @@ MAX_RETRIES = 3
 SEND_DELAY = 1
 
 # =====================
+# LOGGING
+# =====================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
+# =====================
 # PHRASES
 # =====================
 
 ROCK_PHRASES = [
     "Музыка не стареет — она становится историей",
-    "Каждый аккорд оставляет след во времени",
     "Рок живёт там, где заканчиваются слова",
-    "История музыки пишется не датами, а звуком",
     "Где звучит гитара — там начинается память",
-    "Эпохи уходят, но риффы остаются",
-    "Один звук может изменить целую эпоху",
-    "Музыка — это память, которая умеет звучать",
-
-    "Пусть кровь и сталь решат, где правда и где страх",
-    "Я выбираю путь, где нет пути назад",
-    "Город сгорел, но память не сгорела",
     "Мы дети грома — нас не удержит тишина",
-    "Время не лечит, оно лишь шрамирует душу",
-    "Сквозь дым и пепел слышен голос судьбы",
-    "Я слышу крик гитар в холодной пустоте",
-    "Пока горит огонь — мы не станем прахом",
-    "Нет света без тьмы, нет веры без боли",
-    "Сталь не предаёт, предают только люди",
-    "Наши песни тяжелее любых оков",
-    "Когда молчит небо — говорит металл",
-    "Мы идём сквозь ад, но не просим пощады",
-    "Каждый аккорд — как удар судьбы",
-    "И даже тьма склоняется перед звуком",
-
-    "Между светом и тьмой я выбираю гром",
-    "Судьба играет риффами на костях времени",
-    "Мы выжили там, где молчит даже надежда",
-    "Пепел прошлого поёт в моих венах",
-    "Где заканчивается страх — начинается металл",
-    "Я слышу вечность в перегруженных струнах",
-    "Мир трещит, но гитара держит небо",
-    "Мы не ангелы — мы те, кто остался в огне",
-    "Холод стали заменяет нам молитвы",
-    "Каждый аккорд — как удар молота судьбы",
-    "Там, где падают города, рождается звук",
-    "Мы не просим прощения у тишины",
-    "Вой ветра звучит как старый рифф",
-    "Сквозь кровь и снег идёт наш голос",
-    "Нет дороги назад, есть только вперёд",
-    "Металл в душе тяжелее любых цепей",
-    "Мы пишем историю шрамами на гитаре",
-    "Пусть мир сгорит — мы сыграем до конца",
-    "Я живу на границе света и разрушения",
-    "В каждом ударе барабанов — дыхание войны",
-    "Небо рвётся под весом наших аккордов",
-    "Тьма учит нас звучать громче света",
-    "Мы — эхо тех, кто не вернулся",
-    "Риффы режут ночь, как клинки",
-    "Память звучит тяжелее стали",
-    "Сломанные крылья не мешают летать в огне",
-    "Мы дети пепла и перегруженных усилителей",
-    "Время не лечит — оно усиливает боль",
-    "Каждый концерт — это маленький конец света",
-    "Мы поём там, где заканчиваются молитвы",
-    "Стены дрожат от правды в наших песнях",
-    "Гитары говорят то, что молчит человек",
-    "Мы не боимся тишины — мы её ломаем",
-    "Осколки света режут тьму внутри нас",
-    "Наш путь — это звук без возврата",
-    "Металл живёт там, где умирает страх",
-    "Я слышу судьбу в перегруженном усилителе",
-    "Мы не герои — мы свидетели огня",
-    "Город спит, но сцена дышит",
-    "Сломанные мечты звучат громче реальности",
-    "Мы идём сквозь бурю на одной ноте",
-    "Рок не умирает — он становится шрамом",
-    "Каждая струна — это нерв эпохи",
-    "Мы танцуем на руинах старого мира",
-    "Где нет надежды — начинается соло",
-    "Наши песни тяжелее времени",
-    "Мы слышим правду в искажении звука",
-    "Металл — это язык выживших",
-    "И даже тишина боится перегруза",
-    "Мы не исчезаем — мы превращаемся в звук"
+    "Каждый аккорд — это удар судьбы",
+    "Рок не умирает — он становится шрамом"
 ]
 
 last_phrase = None
 
 def get_phrase():
     global last_phrase
-
     phrase = random.choice(ROCK_PHRASES)
 
     while phrase == last_phrase and len(ROCK_PHRASES) > 1:
@@ -137,7 +76,8 @@ if OPENAI_API_KEY:
     try:
         from openai import OpenAI
         client = OpenAI(api_key=OPENAI_API_KEY)
-    except:
+    except Exception as e:
+        logging.warning(f"OpenAI init failed: {e}")
         client = None
 
 # =====================
@@ -147,34 +87,34 @@ if OPENAI_API_KEY:
 session = requests.Session()
 session.mount("https://", HTTPAdapter(pool_connections=10, pool_maxsize=10))
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
-
 # =====================
 # FILES
 # =====================
 
-def load_events():
+def load_json(path, default):
     try:
-        with open(DB_FILE, "r", encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    except:
-        return []
+    except Exception:
+        return default
+
+
+def save_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def load_events():
+    return load_json(DB_FILE, [])
 
 
 def load_sent():
-    try:
-        with open(SENT_FILE, "r", encoding="utf-8") as f:
-            return set(json.load(f))
-    except:
-        return set()
+    data = load_json(SENT_FILE, [])
+    return set(data)
 
 
 def save_sent(sent):
-    with open(SENT_FILE, "w", encoding="utf-8") as f:
-        json.dump(sorted(sent), f, ensure_ascii=False, indent=2)
+    save_json(SENT_FILE, sorted(sent))
 
 # =====================
 # DATE
@@ -184,10 +124,12 @@ def parse_date(date_str):
     if not date_str:
         return None
 
+    date_str = date_str.strip()
+
     for fmt in ("%d-%m-%Y", "%d-%m"):
         try:
-            return datetime.strptime(date_str.strip(), fmt).date()
-        except:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
             continue
 
     return None
@@ -208,8 +150,8 @@ def send_message(text):
             r = session.post(API_URL + "/sendMessage", data=payload, timeout=15)
             if r.status_code == 200:
                 return True
-        except:
-            pass
+        except Exception as e:
+            logging.warning(f"Telegram error: {e}")
 
         time.sleep(2)
 
@@ -228,37 +170,24 @@ def make_event_id(item, year):
 # =====================
 
 def ai_generate(item):
-
     if not client:
         return None
-
-    prompt = f"""
-Ты музыкальный журналист.
-
-ПРАВИЛА:
-- не повторяй имя или группу
-- не используй их напрямую
-- 1–3 предложения
-- стиль: музыкальная журналистика
-
-СОБЫТИЕ:
-{item.get('event')}
-"""
 
     try:
         res = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
                 {"role": "system", "content": "Ты музыкальный редактор."},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": f"Напиши 1–3 предложения о событии: {item.get('event')}"}
             ],
             temperature=1.0,
-            max_tokens=200
+            max_tokens=150
         )
 
         return res.choices[0].message.content.strip()
 
-    except:
+    except Exception as e:
+        logging.warning(f"AI error: {e}")
         return None
 
 # =====================
@@ -281,7 +210,6 @@ def build_message(item, current_year):
     )
 
     ai_text = ai_generate(item)
-
     if ai_text:
         text += f"\n\n🧠 <i>{ai_text}</i>"
 
@@ -305,30 +233,41 @@ def check_events():
 
     processed = set()
 
+    sent_count = 0
+    invalid_dates = 0
+
     for item in events:
 
-        event_date = parse_date(item.get("date", ""))
+        try:
+            event_date = parse_date(item.get("date"))
 
-        if not event_date:
-            continue
+            if not event_date:
+                invalid_dates += 1
+                continue
 
-        if event_date.day != now.day or event_date.month != now.month:
-            continue
+            if event_date.day != now.day or event_date.month != now.month:
+                continue
 
-        event_id = make_event_id(item, year)
+            event_id = make_event_id(item, year)
 
-        if event_id in processed or event_id in sent:
-            continue
+            if event_id in processed or event_id in sent:
+                continue
 
-        processed.add(event_id)
+            processed.add(event_id)
 
-        text = build_message(item, year)
+            text = build_message(item, year)
 
-        if send_message(text):
-            sent.add(event_id)
-            time.sleep(SEND_DELAY)
+            if send_message(text):
+                sent.add(event_id)
+                sent_count += 1
+                time.sleep(SEND_DELAY)
+
+        except Exception as e:
+            logging.error(f"Loop error: {e}")
 
     save_sent(sent)
+
+    logging.info(f"DONE | sent={sent_count} | invalid={invalid_dates}")
 
 # =====================
 # ENTRY
