@@ -1,4 +1,3 @@
-```yaml id="ghwf1"
 name: Rock History Bot
 
 on:
@@ -31,4 +30,3 @@ jobs:
 
       - name: Run bot
         run: python main.py
-```
