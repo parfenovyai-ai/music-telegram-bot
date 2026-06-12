@@ -14,14 +14,14 @@ from requests.adapters import HTTPAdapter
 # CONFIG
 # =====================
 
-TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 
 if not BOT_TOKEN or not CHANNEL_ID:
     raise RuntimeError("Missing BOT_TOKEN or CHANNEL_ID")
 
-API_URL = f"https://api.telegram.org/bot{TOKEN}"
+API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 DB_FILE = "database.json"
 SENT_FILE = "sent.json"
