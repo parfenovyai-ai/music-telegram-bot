@@ -18,7 +18,7 @@ TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
 CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
 OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 
-if not TOKEN or not CHANNEL_ID:
+if not BOT_TOKEN or not CHANNEL_ID:
     raise RuntimeError("Missing BOT_TOKEN or CHANNEL_ID")
 
 API_URL = f"https://api.telegram.org/bot{TOKEN}"
@@ -186,7 +186,7 @@ def ai_generate(item):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.9,
-            max_tokens=180
+            max_tokens=250
         )
 
         return res.choices[0].message.content.strip()
