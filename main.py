@@ -284,7 +284,7 @@ def build_message(item, current_year):
     text += f"\n\n🎧 <i>{get_phrase()}</i>"
 
     return text
-
+    
 # =====================
 # MAIN
 # =====================
@@ -292,50 +292,94 @@ def build_message(item, current_year):
 def check_events():
 
     now = datetime.now(MOSCOW_TZ)
-    year = now.year
+    today_prefix = now.strftime("%Y-%m-%d")
 
     events = load_events()
     sent = load_sent()
 
-    sent = {x for x in sent if x.startswith(f"{year}_")}
+    # Оставляем только сегодняшние записи
+    sent = {x for x in sent if x.startswith(today_prefix)}
 
     processed = set()
 
     sent_count = 0
     invalid_dates = 0
 
+    logging.info(
+        f"Начата проверка событий за {now.strftime('%d.%m.%Y')}"
+    )
+
     for item in events:
 
         try:
+
             event_date = parse_date(item.get("date"))
 
-            if not event_date:
+            if event_date is None:
                 invalid_dates += 1
                 continue
 
-            if event_date.day != now.day or event_date.month != now.month:
+            # Сравниваем только день и месяц
+            if (
+                event_date.day != now.day
+                or event_date.month != now.month
+            ):
                 continue
 
-            event_id = make_event_id(item, year)
+            event_id = make_event_id(item)
 
-            if event_id in processed or event_id in sent:
+            # Защита от дублей внутри одного запуска
+            if event_id in processed:
                 continue
 
             processed.add(event_id)
 
-            text = build_message(item, year)
+            # Уже отправлялось сегодня
+            if event_id in sent:
+                logging.info(
+                    f"Пропуск (уже отправлено): "
+                    f"{item.get('artist', 'Без имени')}"
+                )
+                continue
+
+            text = build_message(item, now.year)
 
             if send_message(text):
+
                 sent.add(event_id)
                 sent_count += 1
+
+                logging.info(
+                    f"Отправлено: "
+                    f"{item.get('artist', 'Без имени')}"
+                )
+
                 time.sleep(SEND_DELAY)
 
-        except Exception as e:
-            logging.error(f"Loop error: {e}")
+            else:
 
+                logging.warning(
+                    f"Не удалось отправить: "
+                    f"{item.get('artist', 'Без имени')}"
+                )
+
+        except Exception as e:
+
+            logging.exception(
+                f"Ошибка обработки записи: {e}"
+            )
+
+    # Сохраняем только сегодняшние отправленные события
     save_sent(sent)
 
-    logging.info(f"DONE | sent={sent_count} | invalid={invalid_dates}")
+    if sent_count == 0:
+        logging.info("Сегодня событий для публикации не найдено.")
+
+    logging.info(
+        "Проверка завершена | "
+        f"Отправлено: {sent_count} | "
+        f"Некорректных дат: {invalid_dates}"
+    )
 
 # =====================
 # ENTRY
