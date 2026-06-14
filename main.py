@@ -326,7 +326,7 @@ def check_events():
             ):
                 continue
 
-            event_id = make_event_id(item)
+            event_id = make_event_id(item, now.year)
 
             # Защита от дублей внутри одного запуска
             if event_id in processed:
