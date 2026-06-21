@@ -521,7 +521,7 @@
 
 {"date": "20-06-1942", "artist": "Brian Wilson", "group": "The Beach Boys", "event": "Родился😊"},
 
-{"date": "21-06-1961", "artist": "Kris Kristofferson", "group": "Solo", "event": "Родился😊 (кантри-рок влияние)"},
+{"date": "22-06-1936", "artist": "Kris Kristofferson", "group": "Solo", "event": "Родился😊 (кантри-рок влияние)"},
 
 {"date": "22-06-2018", "artist": "Vinnie Paul", "group": "Pantera", "event": "Умер😢"},
 
@@ -653,6 +653,8 @@
 
 {"date": "22-08", "artist": "Андрей Голованов", "group": "Кипелов", "event": "Родился😊"},
 
+{"date": "22-08", "artist": "Александр Елин", "group": "Текстописцы😊", "event": "Родился😊"},
+
 {"date": "23-08-1946", "artist": "Keith Moon", "group": "The Who", "event": "Родился😊"},
 
 {"date": "24-08-1947", "artist": "John Cipollina", "group": "Quicksilver Messenger Service", "event": "Родился😊"},
@@ -747,7 +749,9 @@
 {"date": "24-09-1969", "artist": "Shawn Crahan", "group": "Slipknot", "event": "Родился😊"},
 
 {"date": "24-09", "artist": "Александр Баёв", "group": "Мастер", "event": "Родился😊"},
-
+  
+{"date": "24-09", "artist": "Евгений Косарев", "group": "MASS MADNESS", "event": "Родился😊"},
+  
 {"date": "25-09-1957", "artist": "Mark Hamill", "group": "Solo", "event": "Родился😊 (рок-кино культура влияние)"},
 
 {"date": "27-09-1953", "artist": "Steve Harrington", "group": "Solo", "event": "Родился😊 (рок-культура влияние)"},
@@ -759,6 +763,8 @@
 {"date": "28-09-1950", "artist": "Steve Peregrin Took", "group": "T. Rex", "event": "Родился😊"},
 
 {"date": "28-09", "artist": "Ярослав Василенко", "group": "Воля и Разум", "event": "Родился😊"},
+
+{"date": "28-09-2024", "artist": "Kris Kristofferson", "group": "Solo", "event": "Умер😢 (кантри-рок влияние)"},
 
 {"date": "29-09-1955", "artist": "Kevin DuBrow", "group": "Quiet Riot", "event": "Родился😊"},
 
