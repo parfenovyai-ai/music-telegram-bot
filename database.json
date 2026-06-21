@@ -132,8 +132,6 @@
 
 {"date": "13-02-1961", "artist": "Henry Rollins", "group": "Black Flag / Rollins Band", "event": "Родился😊"},
 
-{"date": "13-02", "artist": "Виктор Цой", "group": "Кино", "event": "Родился😊"},
-
 {"date": "14-02-1947", "artist": "Tim Buckley", "group": "Solo", "event": "Родился😊"},
 
 {"date": "14-02-1947", "artist": "Ronnie James Dio", "group": "Black Sabbath / Dio", "event": "Родился😊"},
@@ -513,6 +511,8 @@
 
 {"date": "20-06-1942", "artist": "Brian Wilson", "group": "The Beach Boys", "event": "Родился😊"},
 
+{"date": "21-06", "artist": "Виктор Цой", "group": "Кино", "event": "Родился😊"},
+
 {"date": "22-06-1936", "artist": "Kris Kristofferson", "group": "Solo", "event": "Родился😊 (кантри-рок влияние)"},
 
 {"date": "22-06-2018", "artist": "Vinnie Paul", "group": "Pantera", "event": "Умер😢"},
@@ -630,6 +630,8 @@
 {"date": "11-08-1949", "artist": "Eric Carmen", "group": "Raspberries", "event": "Родился😊"},
 
 {"date": "12-08-1950", "artist": "Mark Knopfler", "group": "Dire Straits", "event": "Родился😊"},
+
+{"date": "15-08", "artist": "Виктор Цой", "group": "Кино", "event": "Умер😢"},
 
 {"date": "19-08-1945", "artist": "Ian Gillan", "group": "Deep Purple", "event": "Родился😊"},
 
