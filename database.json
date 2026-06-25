@@ -71,7 +71,7 @@
 
 {"date": "22-02-2026", "artist": "Francis Buchholz", "group": "Scorpions", "event": "Умер😢"}, 
 
-{"date": "22-01", "artist": "Маргарита Пушкина", "group": "Margenta", "event": "Родилась😊"},
+{"date": "22-01", "artist": "Маргарита Пушкина", "group": "Margenta/Летописцы", "event": "Родилась😊"},
 
 {"date": "23-01-1999", "artist": "Slipknot", "group": "Slipknot", "event": "Подписали первый крупный контракт"},
 
@@ -98,6 +98,8 @@
 {"date": "31-01-1985", "artist": "Mike Bloomfield", "group": "Electric Flag", "event": "Умер😢"},
 
 {"date": "31-01-1964", "artist": "Jeff Hanneman", "group": "Slayer", "event": "Родился😊"},
+  
+{"date": "31-01", "artist": "Олег Жиляков", "group": "Catharsis", "event": "Родился😊"},
 
 {
 "date": "01-02-1938", "artist": "Jimmy Carl Black", "group": "The Mothers of Invention", "event": "Родился😊"},
@@ -265,6 +267,8 @@
 
 {"date": "17-03-1948", "artist": "William Gibson", "group": "Solo", "event": "Родился😊 (киберпанк влияние на индустриальный рок)"},
 
+{"date": "19-03", "artist": "Ольга Петрова", "group": "Catharsis", "event": "Родилась😊"},
+
 {"date": "20-03-1948", "artist": "Carl Palmer", "group": "Emerson, Lake & Palmer", "event": "Родился😊"},
 
 {"date": "20-03-1976", "artist": "Chester Bennington", "group": "Linkin Park", "event": "Родился😊"},
@@ -381,6 +385,8 @@
 {"date": "28-04-1953", "artist": "Kim Gordon", "group": "Sonic Youth", "event": "Родилась😊"},
 
 {"date": "28-04-1965", "artist": "Karl Logan", "group": "Manowar", "event": "Родился😊"},
+
+{"date": "29-04", "artist": "Игорь «Джефф» Поляков", "group": "Catharsis", "event": "Родился😊"},
 
 {"date": "30-04-1945", "artist": "Mimi Farina", "group": "Solo", "event": "Родилась😊"},
 
@@ -568,6 +574,8 @@
 
 {"date": "01-07", "artist": "Александр Стрельников", "group": "Артур Беркут", "event": "Родился😊"},
 
+{"date": "01-07", "artist": "Александр «Граф» Тимонин", "group": "Catharsis", "event": "Родился😊"},
+
 {"date": "02-07-1961", "artist": "Alex James", "group": "Blur", "event": "Родился😊"},
 
 {"date": "04-07-1943", "artist": "Bill Withers", "group": "Solo", "event": "Родился😊 (соул/рок влияние)"},
@@ -684,6 +692,8 @@
 {"date": "22-08", "artist": "Андрей Голованов", "group": "Кипелов", "event": "Родился😊"},
 
 {"date": "22-08", "artist": "Александр Елин", "group": "Текстописцы😊", "event": "Родился😊"},
+
+{"date": "22-08", "artist": "Олег Мишин", "group": "Catharsis", "event": "Родился😊"},
 
 {"date": "23-08-1946", "artist": "Keith Moon", "group": "The Who", "event": "Родился😊"},
 
@@ -1038,6 +1048,8 @@
 {"date": "20-12-1973", "artist": "Mark Wakefield", "group": "Linkin Park", "event": "Родился😊"},
 
 {"date": "21-12-1946", "artist": "Albert Lee", "group": "Solo", "event": "Родился😊 (кантри-рок гитара)"},
+
+{"date": "21-12", "artist": "Юлия «Red» Чумакова", "group": "Catharsis", "event": "Родилась😊"},
 
 {"date": "22-12-1944", "artist": "Robin Gibb", "group": "Bee Gees", "event": "Родился😊"},
 
