@@ -7,6 +7,8 @@
 
 {"date": "02-01", "artist": "Константин Никольский", "group": "Воскресение", "event": "Родился😊"},
 
+{"date": "02-01", "artist": "Дмитрий Кривенков", "group": "Эпидемия", "event": "Родился😊"},
+
 {"date": "03-01-1954", "artist": "Ross Friedman", "group": "Manowar", "event": "Родился😊"},
 
 {"date": "04-01-1969", "artist": "Marilyn Manson", "group": "Marilyn Manson", "event": "Родился😊"},
@@ -18,6 +20,8 @@
 {"date": "06-01-1953", "artist": "John Petrucci", "group": "Dream Theater", "event": "Родился😊"},
 
 {"date": "07-01", "artist": "Константин Кинчев", "group": "Алиса", "event": "Родился😊"},
+
+{"date": "07-01", "artist": "Дмитрий Процко", "group": "Эпидемия", "event": "Родился😊"},
 
 {"date": "08-01-1935", "artist": "Elvis Presley", "group": "Solo", "event": "Родился😊"},
 
@@ -42,6 +46,8 @@
 {"date": "11-01", "artist": "Юрий Рукавишников", "group": "The Priest", "event": "Родилась😊"},
 
 {"date": "12-01-1969", "artist": "Led Zeppelin", "group": "Led Zeppelin", "event": "Релиз дебютного альбома 'Led Zeppelin'"},
+
+{"date": "13-01", "artist": "Илья Мамонтов", "group": "Эпидемия", "event": "Родился😊"},
 
 {"date": "14-01-1969", "artist": "Dave Grohl", "group": "Nirvana / Foo Fighters", "event": "Родился😊"},
 
@@ -301,6 +307,8 @@
 
 {"date": "26-03-1948", "artist": "Steven Tyler", "group": "Aerosmith", "event": "Родился😊"},
 
+{"date": "26-03", "artist": "Павел Окунев", "group": "Арда/Эпидемия", "event": "Родился😊"},
+
 {"date": "26-03-2026", "artist": "Ross Friedman", "group": "Manowar", "event": "Умер😢"},
 
 {"date": "27-03", "artist": "Ян Шутенков", "group": "Silverado", "event": "Родился😊"},
@@ -450,7 +458,13 @@
 
 {"date": "17-05", "artist": "Евгений Колчин", "group": "Hardballs/Гран-Куражъ/Маврин", "event": "Родился😊"},
 
+{"date": "17-05", "artist": "Евгений Егоров", "group": "Эпидемия", "event": "Родился😊"},
+
 {"date": "18-05-1951", "artist": "Rick Wakeman", "group": "Yes", "event": "Родился😊"},
+
+{"date": "18-05", "artist": "Кирилл Немоляев", "group": "Бони НЕМ", "event": "Родился😊"},
+
+{"date": "18-05-2025", "artist": "Дмитрий Иванов", "group": "Эпидемия", "event": "Умер😢"},
 
 {"date": "19-05-1948", "artist": "Pete Townshend", "group": "The Who", "event": "Родился😊"},
 
@@ -534,6 +548,8 @@
 {"date": "15-06-1941", "artist": "Waylon Jennings", "group": "Solo", "event": "Родился😊 (кантри-рок влияние)"},
 
 {"date": "15-06-1946", "artist": "Noddy Holder", "group": "Slade", "event": "Родился😊"},
+
+{"date": "15-06", "artist": "Максим Самосват", "group": "Эпидемия", "event": "Родился😊"},
 
 {"date": "16-06-1952", "artist": "Gino Vannelli", "group": "Solo", "event": "Родился😊"},
 
@@ -750,9 +766,13 @@
 
 {"date": "07-09", "artist": "Андрей Лобашёв", "group": "Харизма/Arida Vortex", "event": "Родился😊"},
 
+{"date": "07-09", "artist": "Юрий Мелисов", "group": "Эпидемия", "event": "Родился😊"},
+
 {"date": "08-09-1968", "artist": "Marcus Siepen", "group": "Blind Guardian", "event": "Родился😊"},
 
 {"date": "09-09-1941", "artist": "Dave Stewart", "group": "Eurythmics", "event": "Родился😊"},
+
+{"date": "09-09", "artist": "Дмитрий Иванов", "group": "Эпидемия", "event": "Родился😊"},
 
 {"date": "10-09-1946", "artist": "Joe Perry", "group": "Aerosmith", "event": "Родился😊"},
 
@@ -984,7 +1004,9 @@
 
 {"date": "23-11-1944", "artist": "Bruce Hornsby", "group": "Solo", "event": "Родился😊"},
 
-{"date": "24-11-1941", "artist": "Pete Best (ошибка дубликата убрана)", "group": "The Beatles", "event": "Родился😊"},
+{"date": "24-11-1941", "artist": "Pete Best", "group": "The Beatles", "event": "Родился😊"},
+
+{"date": "24-11", "artist": "Роман Валерьев", "group": "Эпидемия", "event": "Родился😊"},
 
 {"date": "25-11-1944", "artist": "Jimi Hendrix (ошибка дубликата убрана)", "group": "The Jimi Hendrix Experience", "event": "Родился😊"},
 
