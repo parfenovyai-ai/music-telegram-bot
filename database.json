@@ -204,6 +204,8 @@
 
 {"date": "27-02", "artist": "Сергей Маврин", "group": "Маврин/Кипелов/Ария", "event": "Родился😊"},
 
+{"date": "27-02", "artist": "Георгий (Густав) Гурьянов", "group": "Кино", "event": "Родился😊"},
+
 {"date": "27-02-1997", "artist": "Анатолий Крупнов", "group": "Чёрный обелиск", "event": "Умер😢"},
 
 {"date": "28-02-1942", "artist": "Brian Jones", "group": "The Rolling Stones", "event": "Родился😊"},
@@ -367,6 +369,8 @@
 {"date": "15-04-1961", "artist": "Bono", "group": "U2", "event": "Родился😊"},
 
 {"date": "17-04-1974", "artist": "Maynard James Keenan", "group": "Tool / A Perfect Circle", "event": "Родился😊"},
+
+{"date": "17-04", "artist": "Игорь Тихомиров", "group": "Кино", "event": "Родился😊"},
 
 {"date": "18-04", "artist": "Лео/Леонид Фомин", "group": "Мастер/Харизма", "event": "Родился😊"},
 
@@ -579,6 +583,8 @@
 
 {"date": "24-06-1944", "artist": "Jeff Beck", "group": "The Yardbirds / Solo", "event": "Родился😊"},
 
+{"date": "24-06", "artist": "Юрий Каспарян", "group": "Ю-Питер/Кино", "event": "Родился😊"},
+
 {"date": "26-06-1944", "artist": "Mick Jones", "group": "Foreigner", "event": "Родился😊"},
 
 {"date": "27-06-1955", "artist": "Jello Biafra", "group": "Dead Kennedys", "event": "Родился😊"},
@@ -634,6 +640,8 @@
 
 {"date": "18-07", "artist": "Михаил Воробьёв", "group": "Chronica", "event": "Родился😊"},
 
+{"date": "18-07", "artist": "Александр Титов", "group": "Кино", "event": "Родился😊"},
+
 {"date": "19-07-1947", "artist": "Brian May", "group": "Queen", "event": "Родился😊"},
 
 {"date": "20-07-1947", "artist": "Carlos Santana", "group": "Santana", "event": "Родился😊"},
@@ -669,7 +677,9 @@
 {"date": "31-07-1944", "artist": "Lobo", "group": "Solo", "event": "Родился😊"},
 
 {
-"date": "01-08-1942", "artist": "Jerry Garcia", "group": "Grateful Dead", "event": "Родился😊"},
+"date": "01-08-1996", "artist": "Первый состав группы", "group": "Catharsis", "event": "Рождение группы😊"},
+  
+{"date": "01-08-1942", "artist": "Jerry Garcia", "group": "Grateful Dead", "event": "Родился😊"},
 
 {"date": "02-08-1942", "artist": "Graham Nash", "group": "The Hollies / Crosby, Stills, Nash & Young", "event": "Родился😊"},
 
@@ -931,9 +941,9 @@
 
 {"date": "30-10-1946", "artist": "Chris Slade", "group": "AC/DC", "event": "Родился😊"},
 
-{"date": "31-10-1963", "artist": "Mikkey Dee", "group": "Motörhead", "event": "Родился😊"},
+{"date": "31-10-1963", "artist": "Mikkey Dee", "group": "Motörhead/Scorpions", "event": "Родился😊"},
 
-{"date": "31-10-1963", "artist": "Mikkey Dee", "group": "Scorpions", "event": "Родился😊"},
+{"date": "01-10-1985", "artist": "Первый состав группы", "group": "Ария", "event": "Рождение группы😊"},
 
 {
 "date": "01-11-1950", "artist": "Lyle Lovett", "group": "Solo", "event": "Родился😊 (рок/кантри влияние)"},
@@ -1082,6 +1092,8 @@
 {"date": "21-12-1946", "artist": "Albert Lee", "group": "Solo", "event": "Родился😊 (кантри-рок гитара)"},
 
 {"date": "21-12", "artist": "Юлия «Red» Чумакова", "group": "Catharsis", "event": "Родилась😊"},
+
+{"date": "21-12", "artist": "Алексей Рыбин", "group": "Кино", "event": "Родился😊"},
 
 {"date": "22-12-1944", "artist": "Robin Gibb", "group": "Bee Gees", "event": "Родился😊"},
 
