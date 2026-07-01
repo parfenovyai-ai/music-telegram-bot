@@ -13,7 +13,7 @@
 
 {"date": "04-01-1969", "artist": "Marilyn Manson", "group": "Marilyn Manson", "event": "Родился😊"},
 
-{"date": "04-01-1986", "artist": "Phil Lynott", "group": "Thin Lizzy", "event": "Умер😢"},
+{"date": "04-01-1963", "artist": "Till Lindemann", "group": "Rammstein", "event": "Родился😊"},
 
 {"date": "06-01-1953", "artist": "Malcolm Young", "group": "AC/DC", "event": "Родился😊"},
 
@@ -53,6 +53,8 @@
 
 {"date": "16-01-2018", "artist": "Dave Holland", "group": "Judas Priest", "event": "Умер😢"},
 
+{"date": "18-01-1971", "artist": "Jonathan Davis", "group": "Korn", "event": "Родился😊"},
+
 {"date": "18-01-1990", "artist": "Виктор Яковлевич Викштейн", "group": "Ария/Поющие сердца", "event": "Умер😢"},
 
 {"date": "19-01-1981", "artist": "Metallica", "group": "Metallica", "event": "Запись демо 'No Life 'Til Leather'"},
@@ -68,6 +70,8 @@
 {"date": "20-01-1964", "artist": "The Beatles", "group": "The Beatles", "event": "US-релиз альбома 'Meet The Beatles!'"},
 
 {"date": "20-01-1978", "artist": "Sid Wilson", "group": "Slipknot", "event": "Родился😊"},
+
+{"date": "20-01-1959", "artist": "Herman Frank", "group": "Accept", "event": "Родился😊"},
 
 {"date": "21-01", "artist": "Михаил Житняков", "group": "Ария/Гран-Куражъ", "event": "Родился😊"},
 
@@ -120,6 +124,8 @@
 
 {"date": "06-02-1945", "artist": "Bob Marley", "group": "The Wailers", "event": "Родился😊"},
 
+{"date": "06-02", "artist": "Андрей Князев («Князь»)", "group": "КняZz/Король и Шут", "event": "Родился😊"},
+
 {"date": "07-02-1974", "artist": "Wes Borland", "group": "Limp Bizkit", "event": "Родился😊"},
 
 {"date": "08-02-1942", "artist": "Graham Nash", "group": "The Hollies / Crosby, Stills, Nash & Young", "event": "Родился😊"},
@@ -161,6 +167,8 @@
 {"date": "16-02-1958", "artist": "Ice-T", "group": "Body Count", "event": "Родился😊"},
 
 {"date": "16-02-1965", "artist": "Dave Lombardo", "group": "Slayer", "event": "Родился😊"},
+
+{"date": "16-02", "artist": "Олег (Хельги) Богданов", "group": "Фактор Страха", "event": "Родился😊"},
 
 {"date": "17-02-1963", "artist": "Michael Jordan (рок-культура влияние)", "group": "Solo", "event": "Родился😊"},
 
@@ -340,6 +348,8 @@
 
 {"date": "04-04-1946", "artist": "Dave Hill", "group": "Slade", "event": "Родился😊"},
 
+{"date": "04-04-1958", "artist": "Peter Baltes", "group": "Accept", "event": "Родился😊"},
+
 {"date": "04-04-2011", "artist": "Scott Columbus", "group": "Manowar", "event": "Умер😢"},
 
 {"date": "05-04-1948", "artist": "Dave Holland", "group": "Judas Priest", "event": "Родился😊"},
@@ -347,6 +357,8 @@
 {"date": "05-04-1994", "artist": "Kurt Cobain", "group": "Nirvana", "event": "Умер😢"},
 
 {"date": "06-04-1963", "artist": "Paul Rudd (рок-культура влияние)", "group": "Solo", "event": "Родился😊"},
+
+{"date": "06-04-1952", "artist": "Udo Dirkschneider", "group": "Accept", "event": "Родился😊"},
 
 {"date": "07-04-1967", "artist": "Kurt Cobain", "group": "Nirvana", "event": "Родился😊"},
 
@@ -361,6 +373,8 @@
 {"date": "10-04-1952", "artist": "Steven Seagal", "group": "Solo", "event": "Родился😊 (блюз-рок влияние)"},
 
 {"date": "11-04-1942", "artist": "John Kay", "group": "Steppenwolf", "event": "Родился😊"},
+
+{"date": "11-04-1971", "artist": "Oliver Riedel", "group": "Rammstein", "event": "Родился😊"},
 
 {"date": "12-04-1940", "artist": "Herbie Hancock", "group": "Solo", "event": "Родился😊 (джаз-рок влияние)"},
 
@@ -384,7 +398,9 @@
 
 {"date": "23-04-1977", "artist": "John Cena", "group": "Solo", "event": "Родился😊 (рок/метал влияние в WWE)"},
 
-{"date": "24-04", "artist": "Сергей Сергеев", "group": "Silverado", "event": "Родился😊"},
+{"date": "23-04-1976", "artist": "Henning Rümenapp", "group": "Guano Apes", "event": "Родилась😊"}, 
+
+{"date": "24-04", "artist": "Сергей Курлыков 'Dean'", "group": "Silverado", "event": "Родился😊"},
 
 {"date": "25-04", "artist": "Антон Андрухович", "group": "ServAnteS/Iron Beast", "event": "Родился😊"},
 
@@ -401,6 +417,8 @@
 {"date": "28-04-1953", "artist": "Kim Gordon", "group": "Sonic Youth", "event": "Родилась😊"},
 
 {"date": "28-04-1965", "artist": "Karl Logan", "group": "Manowar", "event": "Родился😊"},
+
+{"date": "28-04", "artist": "Владислав (Graf) Ивойлов", "group": "Amalgama", "event": "Родился😊"},
 
 {"date": "29-04", "artist": "Игорь «Джефф» Поляков", "group": "Catharsis", "event": "Родился😊"},
 
@@ -442,6 +460,8 @@
 
 {"date": "10-05-1960", "artist": "Bono", "group": "U2", "event": "Родился😊"},
 
+{"date": "11-05-1966", "artist": "Christoph "Doom" Schneider", "group": "Rammstein", "event": "Родился😊"},
+
 {"date": "11-05", "artist": "Евгений Маргулис", "group": "Машина времени / Воскресение", "event": "Родился😊"},
 
 {"date": "12-05-1948", "artist": "Steve Winwood", "group": "Traffic / Spencer Davis Group", "event": "Родился😊"},
@@ -455,6 +475,8 @@
 {"date": "15-05-1948", "artist": "Brian Eno", "group": "Roxy Music", "event": "Родился😊"},
 
 {"date": "16-05-1965", "artist": "Krist Novoselic", "group": "Nirvana", "event": "Родился😊"},
+
+{"date": "16-05", "artist": "Юрий Шевчук", "group": "ДДТ", "event": "Родился😊"},
 
 {"date": "16-05-2010", "artist": "Ronnie James Dio", "group": "Rainbow/Black Sabbath", "event": "Умер😢"},
 
@@ -478,6 +500,8 @@
 
 {"date": "20-05-1944", "artist": "Joe Cocker", "group": "Solo", "event": "Родился😊"},
 
+{"date": "20-05", "artist": "Константин Селезнёв", "group": "Amalgama/Фактор Страха", "event": "Родился😊"},
+
 {"date": "21-05-2016", "artist": "Nick Menza", "group": "Megadeth", "event": "Умер😢"},
 
 {"date": "22-05-1959", "artist": "Morrissey", "group": "The Smiths", "event": "Родился😊"},
@@ -492,7 +516,7 @@
 
 {"date": "25-05-1948", "artist": "Klaus Meine", "group": "Scorpions", "event": "Родился😊"},
 
-{"date": "25-05-1948", "artist": "Klaus Meine", "group": "Scorpions", "event": "Родилась😊"}, 
+{"date": "25-05-1976", "artist": "Sandra Nasić", "group": "Guano Apes", "event": "Родилась😊"}, 
 
 {"date": "26-05", "artist": "Марк Бейгун", "group": "Артур Беркут", "event": "Родился😊"},
 
@@ -527,6 +551,8 @@
 
 {"date": "06-06-1961", "artist": "Tom Araya", "group": "Slayer", "event": "Родился😊"},
 
+{"date": "06-06-1970", "artist": "James "Munky" Shaffer", "group": "Korn", "event": "Родился😊"},
+
 {"date": "07-06-1940", "artist": "Tom Jones", "group": "Solo", "event": "Родился😊 (рок/блюз влияние)"},
 
 {"date": "07-06-1951", "artist": "Lucas Fox", "group": "Motörhead", "event": "Родился😊"},
@@ -544,6 +570,8 @@
 {"date": "12-06", "artist": "Александр Гончаров", "group": "Артерия", "event": "Родился😊"},
 
 {"date": "14-06-1949", "artist": "Jim Lea", "group": "Slade", "event": "Родился😊"},
+
+{"date": "14-06-1970", "artist": "Ray Luzier", "group": "Korn", "event": "Родился😊"},
 
 {"date": "14-06", "artist": "Михаил Серышев", "group": "Воля и Разум/Мастер", "event": "Родился😊"},
 
@@ -567,6 +595,8 @@
 
 {"date": "19-06-1963", "artist": "Simon Wright", "group": "AC/DC", "event": "Родился😊"},
 
+{"date": "19-06-1970", "artist": "Brian "Head" Welch", "group": "Korn", "event": "Родился😊"},
+
 {"date": "20-06-1942", "artist": "Brian Wilson", "group": "The Beach Boys", "event": "Родился😊"},
 
 {"date": "21-06-1978", "artist": "Frederik Ehmke", "group": "Blind Guardian", "event": "Родился😊"},
@@ -582,6 +612,8 @@
 {"date": "23-06-1953", "artist": "Glenn Danzig", "group": "Misfits / Danzig", "event": "Родился😊"},
 
 {"date": "24-06-1944", "artist": "Jeff Beck", "group": "The Yardbirds / Solo", "event": "Родился😊"},
+
+{"date": "24-06-1967", "artist": "Richard Z. Kruspe", "group": "Rammstein", "event": "Родился😊"},
 
 {"date": "24-06", "artist": "Юрий Каспарян", "group": "Ю-Питер/Кино", "event": "Родился😊"},
 
@@ -607,6 +639,8 @@
 {"date": "02-07-1961", "artist": "Alex James", "group": "Blur", "event": "Родился😊"},
 
 {"date": "04-07-1943", "artist": "Bill Withers", "group": "Solo", "event": "Родился😊 (соул/рок влияние)"},
+
+{"date": "04-07-1957", "artist": "Jörg Fischer", "group": "Accept", "event": "Родился😊"},
 
 {"date": "05-07-1960", "artist": "Graham Gabbard", "group": "Solo", "event": "Родился😊"},
 
@@ -643,6 +677,8 @@
 {"date": "18-07", "artist": "Александр Титов", "group": "Кино", "event": "Родился😊"},
 
 {"date": "19-07-1947", "artist": "Brian May", "group": "Queen", "event": "Родился😊"},
+
+{"date": "19-07-2013", "artist": "Михаил «Горшок» Горшенёв", "group": "Король и Шут", "event": "Умер😢"},
 
 {"date": "20-07-1947", "artist": "Carlos Santana", "group": "Santana", "event": "Родился😊"},
 
@@ -685,13 +721,17 @@
 
 {"date": "03-08-1963", "artist": "James Hetfield", "group": "Metallica", "event": "Родился😊"},
 
-{"date": "04-08-1951", "artist": "Louis Armstrong (рок-культура влияние)", "group": "Solo", "event": "Родился😊"},
+{"date": "03-08-1974", "artist": "Dennis Poschwatta", "group": "Guano Apes", "event": "Родился😊"}, 
+
+{"date": "04-08-1960", "artist": "Stefan Kaufmann", "group": "Accept", "event": "Родился😊"},
 
 {"date": "05-08-1953", "artist": "Rick Derringer", "group": "The McCoys", "event": "Родился😊"},
 
 {"date": "06-08-1948", "artist": "Kevin Ayers", "group": "Soft Machine", "event": "Родился😊"},
 
 {"date": "07-08-1958", "artist": "Bruce Dickinson", "group": "Iron Maiden", "event": "Родился😊"},
+
+{"date": "07-08-1973", "artist": "Михаил «Горшок» Горшенёв", "group": "Король и Шут", "event": "Родился😊"},
 
 {"date": "08-08-1961", "artist": "The Edge", "group": "U2", "event": "Родился😊"},
 
@@ -702,6 +742,8 @@
 {"date": "10-08-1947", "artist": "Ian Anderson", "group": "Jethro Tull", "event": "Родился😊"},
 
 {"date": "10-08-1966", "artist": "Hansi Kürsch", "group": "Blind Guardian", "event": "Родился😊"},
+
+{"date": "10-08-1960", "artist": "David Reece", "group": "Accept", "event": "Родился😊"},
 
 {"date": "11-08-1949", "artist": "Eric Carmen", "group": "Raspberries", "event": "Родился😊"},
 
@@ -816,6 +858,8 @@
 
 {"date": "21-09-1954", "artist": "Phil “Philthy Animal” Taylor", "group": "Motörhead", "event": "Родился😊"},
 
+{"date": "21-09-1972", "artist": "David Silveria", "group": "Korn", "event": "Родился😊"},
+
 {"date": "22-09-1958", "artist": "Andrea Bocelli", "group": "Solo", "event": "Родился😊 (симфо/рок влияние)"},
 
 {"date": "23-09-1949", "artist": "Bruce Springsteen", "group": "E Street Band", "event": "Родился😊"},
@@ -882,6 +926,8 @@
 {"date": "12-10", "artist": "Сергей Терентьев", "group": "Артерия/Кипелов/Ария", "event": "Родился😊"},
 
 {"date": "13-10", "artist": "Вадим Самойлов", "group": "Агата Кристи", "event": "Родился😊"},
+
+{"date": "14-10-1974", "artist": "Stefan Ude", "group": "Guano Apes", "event": "Родился😊"},
 
 {"date": "14-10", "artist": "Андрей Больщаков", "group": "Воля и Разум/Мастер/Ария", "event": "Родился😊"},
 
@@ -950,6 +996,8 @@
 
 {"date": "02-11-1946", "artist": "David Schwimmer", "group": "Solo", "event": "Родился😊 (рок-культура влияние)"},
 
+{"date": "02-11-1969", "artist": "Reginald "Fieldy" Arvizu", "group": "Korn", "event": "Родился😊"},
+
 {"date": "02-11", "artist": "Антон Михайлов", "group": "LedStar", "event": "Родился😊"},
 
 {"date": "03-11-1953", "artist": "Adam Ant", "group": "Adam and the Ants", "event": "Родился😊"},
@@ -993,6 +1041,8 @@
 {"date": "14-11-1948", "artist": "Gordon Lightfoot", "group": "Solo", "event": "Родился😊"},
 
 {"date": "15-11-1946", "artist": "Jimi Hendrix", "group": "The Jimi Hendrix Experience", "event": "Родился😊"},
+
+{"date": "16-11-1966", "artist": "Christian "Flake" Lorenz", "group": "Rammstein", "event": "Родился😊"},
 
 {"date": "16-11", "artist": "Александр 'Змей'", "group": "Silverado", "event": "Родился😊"},
 
@@ -1059,7 +1109,9 @@
 
 {"date": "09-12-1942", "artist": "Dick Van Patten", "group": "Solo", "event": "Родился😊 (рок-культура влияние)"},
 
-{"date": "10-12-1941", "artist": "Thelma Houston", "group": "Solo", "event": "Родилась😊 (соул/рок влияние)"},
+{"date": "09-12-1964", "artist": "Paul Landers", "group": "Rammstein", "event": "Родился😊"},
+
+{"date": "10-12-1959", "artist": "Wolf Hoffmann", "group": "Accept", "event": "Родился😊"},
 
 {"date": "11-12-1946", "artist": "J. Geils", "group": "The J. Geils Band", "event": "Родился😊"},
 
