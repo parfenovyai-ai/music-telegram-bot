@@ -61,6 +61,8 @@
 
 {"date": "19-01-1981", "artist": "Metallica", "group": "Metallica", "event": "Запись демо 'No Life 'Til Leather'"},
 
+{"date": "20-01-2018", "artist": "Jim Rodford", "group": "The Kinks", "event": "Умер😢"},
+
 {"date": "20-01-1952", "artist": "Ian Hill", "group": "Judas Priest", "event": "Родился😊"},
   
 {"date": "20-01-1978", "artist": "Sid Wilson", "group": "Slipknot", "event": "Родился😊"},
@@ -130,6 +132,8 @@
 
 {"date": "06-02-1945", "artist": "Bob Marley", "group": "The Wailers", "event": "Родился😊"},
 
+{"date": "06-02-1948", "artist": "John Gosling", "group": "The Kinks", "event": "Родился😊"},
+
 {"date": "06-02", "artist": "Андрей Князев («Князь»)", "group": "КняZz/Король и Шут", "event": "Родился😊"},
 
 {"date": "07-02-1974", "artist": "Wes Borland", "group": "Limp Bizkit", "event": "Родился😊"},
@@ -171,6 +175,8 @@
 {"date": "15-02-1949", "artist": "Mick Avory", "group": "The Kinks", "event": "Родился😊"},
 
 {"date": "15-02-1977", "artist": "Brooks Wackerman", "group": "Avenged Sevenfold", "event": "Родился😊"},
+
+{"date": "15-02-1944", "artist": "Mick Avory", "group": "The Kinks", "event": "Родился😊"},
 
 {"date": "15-02", "artist": "Андрей Крустер", "group": "Мастер", "event": "Родился😊"},
 
@@ -649,6 +655,8 @@
 
 {"date": "21-06-1978", "artist": "Frederik Ehmke", "group": "Blind Guardian", "event": "Родился😊"},
 
+{"date": "21-06-1944", "artist": "Ray Davies", "group": "The Kinks", "event": "Родился😊"},
+
 {"date": "21-06", "artist": "Виктор Цой", "group": "Кино", "event": "Родился😊"},
 
 {"date": "22-06-2018", "artist": "Vinnie Paul", "group": "Pantera", "event": "Умер😢"},
@@ -656,6 +664,8 @@
 {"date": "22-06-1936", "artist": "Kris Kristofferson", "group": "Solo", "event": "Родился😊 (кантри-рок влияние)"},
 
 {"date": "22-06", "artist": "Павел Селеменев", "group": "Гран-КуражЪ", "event": "Родился😊"},
+
+{"date": "23-06-2010", "artist": "Pete Quaife", "group": "The Kinks", "event": "Умер😢"},
 
 {"date": "23-06-1953", "artist": "Glenn Danzig", "group": "Misfits / Danzig", "event": "Родился😊"},
 
@@ -698,6 +708,8 @@
 
 {"date": "07-07-1981", "artist": " Brian Elwin Haner, Jr.'Synyster Gates'", "group": "Avenged Sevenfold", "event": "Родился😊"},
 
+{"date": "07-07-1941", "artist": "Jim Rodford", "group": "The Kinks", "event": "Родился😊"},
+
 {"date": "08-07", "artist": "Жан Сагадеев", "group": "Э.С.Т.", "event": "Родился😊"},
 
 {"date": "09-07-1946", "artist": "Bon Scott", "group": "AC/DC", "event": "Родился😊"},
@@ -733,6 +745,8 @@
 {"date": "18-07-1975", "artist": "Daron Malakian", "group": "System Of A Down", "event": "Родился😊"},
 
 {"date": "18-07-1967", "artist": "Martin Eric Ain", "group": "Celtic Frost", "event": "Родился😊"},
+
+{"date": "18-07-1952", "artist": "Ian Gibbons", "group": "The Kinks", "event": "Родился😊"}
 
 {"date": "18-07", "artist": "Михаил Воробьёв", "group": "Chronica", "event": "Родился😊"},
 
@@ -779,17 +793,21 @@
 {"date": "31-07-1981", "artist": "Matthew Charles Sanders'M. Shadows'", "group": "Avenged Sevenfold", "event": "Родился😊"},
 
 {
-"date": "01-11-2008", "artist": "Jimmy Carl Black", "group": "The Mothers of Invention", "event": "Умер😢"},
-  
-{"date": "01-08-1996", "artist": "Первый состав группы", "group": "Catharsis", "event": "Рождение группы😊"},
+"date": "01-18-2008", "artist": "Jimmy Carl Black", "group": "The Mothers of Invention", "event": "Умер😢"},
+
+{"date": "01-08-2019", "artist": "Ian Gibbons", "group": "The Kinks", "event": "Умер😢"}
   
 {"date": "01-08-1942", "artist": "Jerry Garcia", "group": "Grateful Dead", "event": "Родился😊"},
+
+{"date": "01-08-1996", "artist": "Первый состав группы", "group": "Catharsis", "event": "Рождение группы😊"},
 
 {"date": "02-08-1942", "artist": "Graham Nash", "group": "The Hollies / Crosby, Stills, Nash & Young", "event": "Родился😊"},
 
 {"date": "03-08-1963", "artist": "James Hetfield", "group": "Metallica", "event": "Родился😊"},
 
 {"date": "03-08-1974", "artist": "Dennis Poschwatta", "group": "Guano Apes", "event": "Родился😊"}, 
+
+{"date": "04-08-2023", "artist": "John Gosling", "group": "The Kinks", "event": "Умер😢"},
 
 {"date": "04-08-1960", "artist": "Stefan Kaufmann", "group": "Accept", "event": "Родился😊"},
 
@@ -1300,6 +1318,8 @@
 {"date": "29-12-1986", "artist": "Colin Brittain", "group": "Linkin Park", "event": "Родился😊"},
 
 {"date": "30-12-1942", "artist": "Michael Nesmith", "group": "The Monkees", "event": "Родился😊"},
+
+{"date": "31-12-1943", "artist": "Pete Quaife", "group": "The Kinks", "event": "Родился😊"},
 
 {"date": "31-12-1948", "artist": "Andy Summers", "group": "The Police", "event": "Родился😊"}
 
