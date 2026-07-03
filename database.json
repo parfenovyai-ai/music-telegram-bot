@@ -234,7 +234,7 @@
 
 {"date": "24-02-1972", "artist": "Chris Fehn", "group": "Slipknot", "event": "Родился😊"},
 
-{"date": "25-02-1943", "artist": "George Harrison", "group": "The Beatles", "event": "Первое исполнение песни 'Something' (период написания)"},
+{"date": "25-02-1947", "artist": "Doug Yule", "group": "The Velvet Underground", "event": "Родился😊"},
 
 {"date": "26-02-2019", "artist": "Andy Anderson", "group": "The Cure", "event": "Ушёл из жизни😢🕯️"},
 
@@ -289,6 +289,8 @@
 
 {"date": "09-03-1940", "artist": "Raul Rekow", "group": "Santana", "event": "Родился😊"},
 
+{"date": "09-03-1942", "artist": "John Cale", "group": "The Velvet Underground", "event": "Родился😊"},
+
 {"date": "10-03-1957", "artist": "Osamu Kitajima", "group": "Solo", "event": "Родился😊 (прогрессив/психоделик-рок)"},
 
 {"date": "11-03-1950", "artist": "Bobby McFerrin", "group": "Solo", "event": "Родился😊 (влияние на арт-рок и вокальные техники)"},
@@ -306,6 +308,8 @@
 {"date": "13-03", "artist": "Михаил Шаев", "group": "Путь Ломоносова/Артур Беркут", "event": "Родился😊"},
 
 {"date": "14-03-1948", "artist": "Ritchie Blackmore", "group": "Deep Purple / Rainbow", "event": "Родился😊"},
+
+{"date": "14-03-1938", "artist": "Angus MacLise", "group": "The Velvet Underground", "event": "Родился😊"},
 
 {"date": "14-03", "artist": "Александр Манякин", "group": "Кипелов/Ария", "event": "Родился😊"},
 
@@ -681,6 +685,8 @@
 
 {"date": "20-06-1942", "artist": "Brian Wilson", "group": "The Beach Boys", "event": "Родился😊"},
 
+{"date": "21-06-1979", "artist": "Angus MacLise", "group": "The Velvet Underground", "event": "Ушёл из жизни😢🕯️"},
+
 {"date": "21-06-1978", "artist": "Frederik Ehmke", "group": "Blind Guardian", "event": "Родился😊"},
 
 {"date": "21-06-1944", "artist": "Ray Davies", "group": "The Kinks", "event": "Родился😊"},
@@ -917,18 +923,22 @@
 
 {"date": "25-08-1951", "artist": "Rob Halford", "group": "Judas Priest", "event": "Родился😊"},
 
-{"date": "20-01-1952", "artist": "Ian Hill", "group": "Judas Priest", "event": "Родился😊"},
-
 {"date": "25-08", "artist": "Игорь Молчанов", "group": "Мастер/Ария/Альфа", "event": "Родился😊"},
 
 {"date": "26-08-1948", "artist": "Melissa Etheridge", "group": "Solo", "event": "Родилась😊"},
+
+{"date": "26-08-1944", "artist": "Maureen 'Moe' Tucker)", "group": "The Velvet Underground", "event": "Родилась😊"},
 
 {"date": "26-08", "artist": "Сергей Дьяконов", "group": "ArtCoverBand", "event": "Родился😊"},
 
 {"date": "27-08-1953", "artist": "Alex Lifeson", "group": "Rush", "event": "Родился😊"},
 
+{"date": "29-08-1942", "artist": "Sterling Morrison", "group": "The Velvet Underground", "event": "Родился😊"},
+
 {"date": "29-08-1958", "artist": "Michael Jackson", "group": "The Jacksons / Solo", "event": "Родился😊 (поп-рок влияние)"},
 
+{"date": "30-08-1995", "artist": "Sterling Morrison", "group": "The Velvet Underground", "event": "Ушёл из жизни😢🕯️"},
+  
 {"date": "30-08-1945", "artist": "Warren Zevon", "group": "Solo", "event": "Родился😊"},
 
 {"date": "30-08", "artist": "Вячеслав Стосенко", "group": "Гран-КуражЪ", "event": "Родился😊"},
@@ -1141,9 +1151,11 @@
 
 {"date": "26-10-1947", "artist": "Bootsy Collins", "group": "Parliament-Funkadelic", "event": "Родился😊"},
 
+{"date": "27-10-2013", "artist": "Lou Reed", "group": "The Velvet Underground", "event": "Ушёл из жизни😢🕯️"},
+
 {"date": "27-10-1951", "artist": "K.K. Downing", "group": "Judas Priest", "event": "Родился😊"},
 
-{"date": "27-10", "artist": "Алик/Александр Грановский", "group": "Мастер/Ария", "event": "Родился😊"},
+{"date": "27-10", "artist": "Александр 'Алик' Грановский", "group": "Мастер/Ария", "event": "Родился😊"},
 
 {"date": "28-10-1941", "artist": "Charlie Daniels", "group": "Charlie Daniels Band", "event": "Родился😊"},
 
