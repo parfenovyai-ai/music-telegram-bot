@@ -53,6 +53,8 @@
 
 {"date": "16-01-2018", "artist": "Dave Holland", "group": "Judas Priest", "event": "Умер😢"},
 
+{"date": "17-01-1963", "artist": "Kai Hansen", "group": "Helloween", "event": "Родился😊"},
+
 {"date": "18-01-1971", "artist": "Jonathan Davis", "group": "Korn", "event": "Родился😊"},
 
 {"date": "18-01-1990", "artist": "Виктор Яковлевич Викштейн", "group": "Ария/Поющие сердца", "event": "Умер😢"},
@@ -60,18 +62,16 @@
 {"date": "19-01-1981", "artist": "Metallica", "group": "Metallica", "event": "Запись демо 'No Life 'Til Leather'"},
 
 {"date": "20-01-1952", "artist": "Ian Hill", "group": "Judas Priest", "event": "Родился😊"},
-
-{"date": "20-01-1951", "artist": "Richie Faulkner", "group": "Judas Priest", "event": "Родился😊"},
   
 {"date": "20-01-1978", "artist": "Sid Wilson", "group": "Slipknot", "event": "Родился😊"},
 
 {"date": "20-01-1979", "artist": "Rob Bourdon", "group": "Linkin Park", "event": "Родился😊"},
+
+{"date": "20-01-1971", "artist": "Derrick Green", "group": "Sepultura", "event": "Родился😊"},
+
+{"date": "20-01-1959", "artist": "Herman Frank", "group": "Accept", "event": "Родился😊"}, 
   
 {"date": "20-01-1964", "artist": "The Beatles", "group": "The Beatles", "event": "US-релиз альбома 'Meet The Beatles!'"},
-
-{"date": "20-01-1978", "artist": "Sid Wilson", "group": "Slipknot", "event": "Родился😊"},
-
-{"date": "20-01-1959", "artist": "Herman Frank", "group": "Accept", "event": "Родился😊"},
 
 {"date": "21-01", "artist": "Михаил Житняков", "group": "Ария/Гран-Куражъ", "event": "Родился😊"},
 
@@ -84,6 +84,8 @@
 {"date": "22-01", "artist": "Маргарита Пушкина", "group": "Margenta/Летописцы", "event": "Родилась😊"},
 
 {"date": "23-01-1999", "artist": "Slipknot", "group": "Slipknot", "event": "Подписали первый крупный контракт"},
+
+{"date": "24-01-1968", "artist": "Michael Kiske", "group": "Helloween", "event": "Родился😊"},
 
 {"date": "24-01", "artist": "Настя Полева", "group": "Настя", "event": "Родилась😊"},
 
@@ -252,6 +254,8 @@
 {"date": "08-03-1945", "artist": "Micky Dolenz", "group": "The Monkees", "event": "Родился😊"},
 
 {"date": "08-03", "artist": "Дмитрий Борисенков", "group": "Чёрный обелиск", "event": "Родился😊"},
+
+{"date": "08-03-1995", "artist": "Ingo Schwichtenberg", "group": "Helloween", "event": "Умер😢"},
 
 {"date": "09-03-1940", "artist": "Raul Rekow", "group": "Santana", "event": "Родился😊"},
 
@@ -424,6 +428,8 @@
 
 {"date": "30-04-1945", "artist": "Mimi Farina", "group": "Solo", "event": "Родилась😊"},
 
+{"date": "30-04-1969", "artist": "Paulo Xisto Pinto Jr", "group": "Sepultura", "event": "Родился😊"},
+
 
 {
 "date": "01-05-1946", "artist": "Nick Fortunato", "group": "The Buckinghams", "event": "Родился😊"},
@@ -487,6 +493,8 @@
 {"date": "17-05", "artist": "Евгений Егоров", "group": "Эпидемия", "event": "Родился😊"},
 
 {"date": "18-05-1951", "artist": "Rick Wakeman", "group": "Yes", "event": "Родился😊"},
+
+{"date": "18-05-1995", "artist": "Ingo Schwichtenberg", "group": "Helloween", "event": "Родился😊"},
 
 {"date": "18-05", "artist": "Кирилл Немоляев", "group": "Бони НЕМ", "event": "Родился😊"},
 
@@ -568,6 +576,8 @@
 {"date": "12-06-1950", "artist": "Brad Delp", "group": "Boston", "event": "Родился😊"},
 
 {"date": "12-06", "artist": "Александр Гончаров", "group": "Артерия", "event": "Родился😊"},
+
+{"date": "13-06-1965", "artist": "Jairo Guedz", "group": "Sepultura", "event": "Родился😊"},
 
 {"date": "14-06-1949", "artist": "Jim Lea", "group": "Slade", "event": "Родился😊"},
 
@@ -725,13 +735,17 @@
 
 {"date": "04-08-1960", "artist": "Stefan Kaufmann", "group": "Accept", "event": "Родился😊"},
 
+{"date": "04-08-1969", "artist": "Max Cavalera", "group": "Sepultura", "event": "Родился😊"},
+
 {"date": "05-08-1953", "artist": "Rick Derringer", "group": "The McCoys", "event": "Родился😊"},
 
 {"date": "06-08-1948", "artist": "Kevin Ayers", "group": "Soft Machine", "event": "Родился😊"},
 
 {"date": "07-08-1958", "artist": "Bruce Dickinson", "group": "Iron Maiden", "event": "Родился😊"},
-
-{"date": "07-08-1973", "artist": "Михаил «Горшок» Горшенёв", "group": "Король и Шут", "event": "Родился😊"},
+  
+{"date": "07-08-1962", "artist": "Michael Weikath", "group": "Helloween", "event": "Родился😊"},
+  
+{"date": "07-08", "artist": "Михаил «Горшок» Горшенёв", "group": "Король и Шут", "event": "Родился😊"},
 
 {"date": "08-08-1961", "artist": "The Edge", "group": "U2", "event": "Родился😊"},
 
@@ -750,6 +764,8 @@
 {"date": "12-08-1950", "artist": "Mark Knopfler", "group": "Dire Straits", "event": "Родился😊"},
 
 {"date": "15-08", "artist": "Виктор Цой", "group": "Кино", "event": "Умер😢"},
+
+{"date": "18-08-1964", "artist": "Andi Deris", "group": "Helloween", "event": "Родился😊"},
 
 {"date": "19-08-1945", "artist": "Ian Gillan", "group": "Deep Purple", "event": "Родился😊"},
 
@@ -772,6 +788,8 @@
 {"date": "23-08-1946", "artist": "Keith Moon", "group": "The Who", "event": "Родился😊"},
 
 {"date": "24-08-1947", "artist": "John Cipollina", "group": "Quicksilver Messenger Service", "event": "Родился😊"},
+
+{"date": "24-08-1968", "artist": "Andreas Kisser", "group": "Sepultura", "event": "Родился😊"},
 
 {"date": "25-08-1951", "artist": "Rob Halford", "group": "Judas Priest", "event": "Родился😊"},
 
@@ -805,6 +823,8 @@
 {"date": "02-09", "artist": "Михаил Бугаев", "group": "Гран-КуражЪ", "event": "Родился😊"},
 
 {"date": "03-09-1942", "artist": "Al Jardine", "group": "The Beach Boys", "event": "Родился😊"},
+
+{"date": "04-09-1970", "artist": "Igor Cavalera", "group": "Sepultura", "event": "Родился😊"},
 
 {"date": "05-09-1946", "artist": "Freddie Mercury", "group": "Queen", "event": "Родился😊"},
 
@@ -859,6 +879,8 @@
 {"date": "21-09-1954", "artist": "Phil “Philthy Animal” Taylor", "group": "Motörhead", "event": "Родился😊"},
 
 {"date": "21-09-1972", "artist": "David Silveria", "group": "Korn", "event": "Родился😊"},
+
+{"date": "21-09-1964", "artist": "Markus Grosskopf", "group": "Helloween", "event": "Родился😊"},
 
 {"date": "22-09-1958", "artist": "Andrea Bocelli", "group": "Solo", "event": "Родился😊 (симфо/рок влияние)"},
 
