@@ -162,6 +162,8 @@
   
 {"date": "01-02-1938", "artist": "Jimmy Carl Black", "group": "The Mothers of Invention", "event": "Родился😊"},
 
+{"date": "01-02-1954", "artist": "Chuck Dukowski", "group": "The Mothers of Invention", "event": "Родился😊"},
+
 {"date": "02-02-1947", "artist": "Howard Kaylan", "group": "The Mothers of Invention", "event": "Родился😊"},
 
 {"date": "02-02-1942", "artist": "Graham Nash", "group": "The Hollies / Crosby, Stills, Nash & Young", "event": "Родился😊"},
@@ -351,6 +353,8 @@
 
 {"date": "12-03-1956", "artist": "Steve Harris", "group": "Iron Maiden", "event": "Родился😊"},
 
+{"date": "12-03-1969", "artist": "Graham Coxon", "group": "Blur", "event": "Родился😊"},
+
 {"date": "13-03", "artist": "Михаил Шаев", "group": "План Ломоносова/Артур Беркут", "event": "Родился😊"},
 
 {"date": "14-03-1948", "artist": "Ritchie Blackmore", "group": "Deep Purple / Rainbow", "event": "Родился😊"},
@@ -392,6 +396,8 @@
 {"date": "22-03", "artist": "Станислав Козлов", "group": "Артур Беркут", "event": "Родился😊"},
 
 {"date": "23-03-1944", "artist": "Ric Ocasek", "group": "The Cars", "event": "Родился😊"},
+
+{"date": "23-03-1968", "artist": "Damon Albarn", "group": "Blur", "event": "Родился😊"},
 
 {"date": "23-03", "artist": "Дарья Пирожкова", "group": "MASS MADNESS", "event": "Родилась😊"},
 
@@ -582,7 +588,9 @@
 
 {"date": "08-05-1942", "artist": "Jim 'Motorhead' Sherwood", "group": "The Mothers of Invention", "event": "Родился😊"},
 
-{"date": "08-05", "artist": "Вячеслав Сидоров", "group": "Экс-Мастер", "event": "Родился😊"},
+{"date": "08-05-1964", "artist": "Dave Rowntree", "group": "Blur", "event": "Родился😊"},
+  
+{"date": "08-05", "artist": "Dave Rowntree", "group": "Экс-Мастер", "event": "Родился😊"},
 
 {"date": "09-05-1949", "artist": "Billy Joel", "group": "Solo", "event": "Родился😊"},
 
@@ -720,6 +728,8 @@
 {"date": "07-06-1951", "artist": "Lucas Fox", "group": "Motörhead", "event": "Родился😊"},
 
 {"date": "07-06", "artist": "Александр 'Маршал' Миньков", "group": "Парк Горького", "event": "Родился😊"},
+
+{"date": "08-06-1954", "artist": "Greg Ginn", "group": "Black Flag", "event": "Родился😊"},
 
 {"date": "09-06-1941", "artist": "Jon Lord", "group": "Deep Purple", "event": "Родился😊"},
 
@@ -1124,9 +1134,11 @@
 
 {"date": "09-09", "artist": "Дмитрий Иванов", "group": "Эпидемия", "event": "Родился😊"},
 
+{"date": "10-09-1946", "artist": "Don Powell", "group": "Slade", "event": "Родился😊"},
+
 {"date": "10-09-1950", "artist": "Joe Perry", "group": "Aerosmith", "event": "Родился😊"},
 
-{"date": "10-09-1946", "artist": "Don Powell", "group": "Slade", "event": "Родился😊"},
+{"date": "10-09-1963", "artist": "Bill Stevenson", "group": "Black Flag", "event": "Родился😊"},
 
 {"date": "11-09-1955", "artist": "Donnie Hamzik", "group": "Manowar", "event": "Родился😊"},
 
@@ -1147,8 +1159,8 @@
 {"date": "18-09-1951", "artist": "Dee Dee Ramone", "group": "Ramones", "event": "Родился😊"},
 
 {"date": "18-09-1950", "artist": "Joan Jett", "group": "The Runaways / Joan Jett & the Blackhearts", "event": "Родилась😊"},
-
-{"date": "19-09-2019", "artist": "Larry Wallis", "group": "Motörhead", "event": "Ушёл из жизни😢"},
+  
+{"date": "19-09-2019", "artist": "Keith Morris", "group": "Black Flag", "event": "Ушёл из жизни😢"},
 
 {"date": "19-09-1948", "artist": "Twiggy", "group": "Solo", "event": "Родилась😊 (рок-стиль культура"},
 
@@ -1405,6 +1417,8 @@
 {"date": "19-11-1936", "artist": "Ray Collins", "group": "The Mothers of Invention", "event": "Родился😊"},
 
 {"date": "20-11-1946", "artist": "Duane Allman", "group": "The Allman Brothers Band", "event": "Родился😊"},
+
+{"date": "21-11-1968", "artist": "Alex James", "group": "Blur", "event": "Родился😊"},
 
 {"date": "22-11-1949", "artist": "Tina Weymouth", "group": "Talking Heads", "event": "Родилась😊"},
 
