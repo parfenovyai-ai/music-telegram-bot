@@ -156,10 +156,10 @@
 
 {"date": "02-02-1947", "artist": "Howard Kaylan", "group": "The Mothers of Invention", "event": "Родился😊"},
 
-{"date": "02-02-1942", "artist": "Graham Nash", "group": "The Hollies", "event": "Родился😊"},
-
 {"date": "02-02-1942", "artist": "Graham Nash", "group": "The Hollies / Crosby, Stills, Nash & Young", "event": "Родился😊"},
 
+{"date": "02-02-1952", "artist": "Rick Dufay", "group": "Aerosmith", "event": "Родился😊"},
+  
 {"date": "03-02-1947", "artist": "Dave Davies", "group": "The Kinks", "event": "Родился😊"},
 
 {"date": "03-02-1959", "artist": "Lol Tolhurst", "group": "The Cure", "event": "Родился😊"},
@@ -246,6 +246,8 @@
 
 {"date": "23-02-1944", "artist": "Johnny Winter", "group": "Solo", "event": "Родился😊"},
 
+{"date": "23-02-1952", "artist": "Brad Whitford)", "group": "Aerosmith", "event": "Родился😊"},
+
 {"date": "23-02", "artist": "Сергей Щураков", "group": "Аквариум", "event": "Родился😊"},
 
 {"date": "23-02", "artist": "Денис Хромых", "group": "План Ломоносова", "event": "Родился😊"},
@@ -259,6 +261,8 @@
 {"date": "26-02-2019", "artist": "Andy Anderson", "group": "The Cure", "event": "Ушёл из жизни😢🕯️"},
 
 {"date": "26-02-1932", "artist": "Johnny Cash", "group": "Solo", "event": "Родился😊"},
+
+{"date": "26-02-1948", "artist": "Steven Tyler", "group": "Aerosmith", "event": "Родился😊"},
 
 {"date": "27-02-1997", "artist": "Анатолий Крупнов", "group": "Чёрный обелиск", "event": "Ушёл из жизни😢🕯️"},
 
@@ -761,9 +765,11 @@
 
 {"date": "21-06-1979", "artist": "Angus MacLise", "group": "The Velvet Underground", "event": "Ушёл из жизни😢🕯️"},
 
-{"date": "21-06-1978", "artist": "Frederik Ehmke", "group": "Blind Guardian", "event": "Родился😊"},
-
 {"date": "21-06-1944", "artist": "Ray Davies", "group": "The Kinks", "event": "Родился😊"},
+
+{"date": "21-06-1950", "artist": "Joey Kramer", "group": "Aerosmith", "event": "Родился😊"},
+
+{"date": "21-06-1978", "artist": "Frederik Ehmke", "group": "Blind Guardian", "event": "Родился😊"},
 
 {"date": "21-06", "artist": "Виктор Цой", "group": "Кино", "event": "Родился😊"},
 
@@ -817,6 +823,8 @@
 {"date": "04-07-1972", "artist": "William Goldsmith", "group": "Foo Fighters", "event": "Родился😊"},
 
 {"date": "05-07-1943", "artist": "Robbie Robertson)", "group": "The Band", "event": "Родился😊"},
+
+{"date": "05-07-1954", "artist": "Steven Tyler", "group": "Aerosmith", "event": "Родился😊"},
 
 {"date": "05-07-1960", "artist": "Graham Gabbard", "group": "Solo", "event": "Родился😊"},
 
@@ -1086,7 +1094,7 @@
 
 {"date": "09-09", "artist": "Дмитрий Иванов", "group": "Эпидемия", "event": "Родился😊"},
 
-{"date": "10-09-1946", "artist": "Joe Perry", "group": "Aerosmith", "event": "Родился😊"},
+{"date": "10-09-1950", "artist": "Joe Perry", "group": "Aerosmith", "event": "Родился😊"},
 
 {"date": "10-09-1946", "artist": "Don Powell", "group": "Slade", "event": "Родился😊"},
 
@@ -1284,8 +1292,6 @@
 
 {"date": "02-11", "artist": "Антон Михайлов", "group": "LedStar", "event": "Родился😊"},
 
-{"date": "03-11-1953", "artist": "Adam Ant", "group": "Adam and the Ants", "event": "Родился😊"},
-
 {"date": "03-11-1973", "artist": "Mick Thomson", "group": "Slipknot", "event": "Родился😊"},
 
 {"date": "05-11-1941", "artist": "Art Garfunkel", "group": "Simon & Garfunkel", "event": "Родился😊"},
@@ -1307,8 +1313,6 @@
 {"date": "08-11", "artist": "Даниил Захаренков", "group": "Чёрный обелиск", "event": "Родился😊"},
 
 {"date": "09-11-1941", "artist": "Tom Fogerty", "group": "Creedence Clearwater Revival", "event": "Родился😊"},
-
-{"date": "10-11-1953", "artist": "Terry Lee Miall", "group": "Adam and the Ants", "event": "Родился😊"},
 
 {"date": "10-11-1956", "artist": "Scott Columbus", "group": "Manowar", "event": "Родился😊"},
 
@@ -1483,6 +1487,8 @@
 
 {"date": "22-12-1944", "artist": "Robin Gibb", "group": "Bee Gees", "event": "Родился😊"},
 
+{"date": "23-12-1946", "artist": "Ray Tabano", "group": "Aerosmith", "event": "Родился😊"},
+
 {"date": "23-12-1956", "artist": "Dave Murray", "group": "Iron Maiden", "event": "Родился😊"},
 
 {"date": "23-12-1940", "artist": "Eddie Vedder", "group": "Pearl Jam", "event": "Родился😊"},
@@ -1528,5 +1534,7 @@
 {"date": "31-12-1943", "artist": "Pete Quaife", "group": "The Kinks", "event": "Родился😊"},
 
 {"date": "31-12-1948", "artist": "Andy Summers", "group": "The Police", "event": "Родился😊"}
+
+{"date": "31-12-1951", "artist": "Tom Hamilton", "group": "Aerosmith", "event": "Родился😊"},
 
 ]
