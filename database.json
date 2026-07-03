@@ -335,9 +335,15 @@
 
 {"date": "08-03", "artist": "Дмитрий Борисенков", "group": "Чёрный обелиск", "event": "Родился😊"},
 
+{"date": "09-03-2007", "artist": "Brad Delp", "group": "Boston", "event": "Ушёл из жизни😢"},
+
+{"date": "09-03-2026", "artist": "Tommy DeCarlo", "group": "Boston", "event": "Ушёл из жизни😢"},
+
 {"date": "09-03-1942", "artist": "John Cale", "group": "The Velvet Underground", "event": "Родился😊"},
 
 {"date": "10-03-2016", "artist": "Keith Emerson", "group": "Emerson, Lake & Palmer", "event": "Ушёл из жизни😢"},
+
+{"date": "10-03-1947", "artist": "Thomas Scholz", "group": "Boston", "event": "Родился😊"},
 
 {"date": "10-03-1957", "artist": "Osamu Kitajima", "group": "Solo", "event": "Родился😊 (прогрессив/психоделик-рок"},
 
@@ -394,6 +400,8 @@
 {"date": "21-03-1946", "artist": "Ray Dorset", "group": "Mungo Jerry", "event": "Родился😊"},
 
 {"date": "21-03", "artist": "Иван Жерновков", "group": "Экс-Артерия", "event": "Родился😊"},
+
+{"date": "22-03-2017", "artist": "Sib Hashian", "group": "Boston", "event": "Ушёл из жизни😢"},
 
 {"date": "22-03", "artist": "Станислав Козлов", "group": "Артур Беркут", "event": "Родился😊"},
 
@@ -489,6 +497,8 @@
 {"date": "11-04-1971", "artist": "Oliver Riedel", "group": "Rammstein", "event": "Родился😊"},
 
 {"date": "12-04-1940", "artist": "Herbie Hancock", "group": "Solo", "event": "Родился😊 (джаз-рок влияние"},
+
+{"date": "12-04-1965", "artist": "Tommy DeCarlo", "group": "Boston", "event": "Родился😊"},
 
 {"date": "12-04", "artist": "Артём Мамай", "group": "ДДТ", "event": "Родился😊"},
 
@@ -747,7 +757,7 @@
 
 {"date": "11-06-1959", "artist": "Hugh Laurie", "group": "Solo", "event": "Родился😊 (блюз-рок сцена"},
 
-{"date": "12-06-1950", "artist": "Brad Delp", "group": "Boston", "event": "Родился😊"},
+{"date": "12-06-1951", "artist": "Brad Delp", "group": "Boston", "event": "Родился😊"},
 
 {"date": "12-06", "artist": "Александр Гончаров", "group": "Артерия", "event": "Родился😊"},
 
@@ -1028,6 +1038,8 @@
 {"date": "14-08-1941", "artist": "David Crosby", "group": "Crosby, Stills, Nash & Young", "event": "Родился😊"},
 
 {"date": "15-08", "artist": "Виктор Цой", "group": "Кино", "event": "Ушёл из жизни😢"},
+
+{"date": "17-08-1949", "artist": "Sib Hashian", "group": "Boston", "event": "Родился😊"},
 
 {"date": "18-08-1964", "artist": "Andi Deris", "group": "Helloween", "event": "Родился😊"},
 
