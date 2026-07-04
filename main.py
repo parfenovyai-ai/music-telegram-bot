@@ -271,7 +271,7 @@ def build_message(item, current_year):
     date = escape(item.get("date", ""))
 
     text = (
-        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
+        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от фирменного бота 🃏</b>\n\n"
         f"👤 <b>{artist}</b>\n"
         f"🎵 {group}\n"
         f"🎭 {role}\n"
