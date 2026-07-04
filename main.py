@@ -24,7 +24,7 @@ if not BOT_TOKEN or not CHANNEL_ID:
 
 API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
-DB_FILE = "database.json"
+DB_FILE = "database_deepseek.json"
 SENT_FILE = "sent.json"
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
@@ -266,6 +266,7 @@ def build_message(item, current_year):
 
     artist = escape(item.get("artist", ""))
     group = escape(item.get("group", ""))
+    role = escape(item.get("role", ""))    
     event = escape(item.get("event", ""))
     date = escape(item.get("date", ""))
 
@@ -273,6 +274,7 @@ def build_message(item, current_year):
         "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ</b>\n\n"
         f"👤 <b>{artist}</b>\n"
         f"🎵 {group}\n"
+        f"🎭 {role}\n"
         f"📖 {event}\n"
         f"🗓 {date}"
     )
