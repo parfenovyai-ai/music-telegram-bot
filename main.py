@@ -283,15 +283,29 @@ def get_gender(item):
         return "female"
     return "male"
 
-def get_death_header(gender):
-    """Возвращает заголовок с учётом рода"""
-    if gender == "female":
-        return "🕯️ <b>УШЛА ИЗ ЖИЗНИ</b>"
+def get_death_header(items):
+    """Возвращает заголовок с учётом количества и пола"""
+    # Проверяем, есть ли женщины среди умерших
+    has_female = any(get_gender(item) == "female" for item in items)
+    has_male = any(get_gender(item) == "male" for item in items)
+    
+    if len(items) == 1:
+        # Один человек
+        if has_female:
+            return "🕯️ <b>УШЛА ИЗ ЖИЗНИ</b>"
+        else:
+            return "🕯️ <b>УШЁЛ ИЗ ЖИЗНИ</b>"
     else:
-        return "🕯️ <b>УШЁЛ ИЗ ЖИЗНИ</b>"
+        # Несколько человек
+        if has_female and has_male:
+            return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
+        elif has_female and not has_male:
+            return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
+        else:
+            return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
 
 def get_death_text(item, gender):
-    """Возвращает текст события с учётом рода"""
+    """Возвращает текст события с учётом рода и выделяет 'родился' жирным"""
     event = item.get("event", "")
     
     # Заменяем окончания для женского рода
@@ -300,10 +314,11 @@ def get_death_text(item, gender):
         event = event.replace("погиб", "погибла")
         event = event.replace("скончался", "скончалась")
         event = event.replace("ушёл", "ушла")
-        event = event.replace("родился", "родилась")
-        event = event.replace("стал", "стала")
-        event = event.replace("был", "была")
         event = event.replace("трагически погиб", "трагически погибла")
+    
+    # Выделяем "родился" жирным шрифтом
+    event = event.replace("родился", "<b>родился</b>")
+    event = event.replace("родилась", "<b>родилась</b>")
     
     return escape(event)
 
@@ -317,10 +332,7 @@ def build_deceased_table(items):
     first_item = items[0]
     date = escape(first_item.get("date", ""))
     
-    # Определяем пол для заголовка (по первому в списке)
-    main_gender = get_gender(first_item)
-    
-    text = get_death_header(main_gender) + "\n\n"
+    text = get_death_header(items) + "\n\n"
     text += f"📅 {date}\n\n"
     
     for item in items:
@@ -333,8 +345,10 @@ def build_deceased_table(items):
         event = get_death_text(item, gender)
         
         text += f"👤 <b>{artist}</b>\n"
-        text += f"🎵 {group}\n"
-        text += f"🎭 {role}\n"
+        if group:
+            text += f"🎵 {group}\n"
+        if role:
+            text += f"🎭 {role}\n"
         text += f"📖 {event}\n"
         text += "-----------------------\n"
     
@@ -352,8 +366,10 @@ def build_regular_message(item, current_year):
     date = escape(item.get("date", ""))
 
     text = f"👤 <b>{artist}</b>\n"
-    text += f"🎵 {group}\n"
-    text += f"🎭 {role}\n"
+    if group:
+        text += f"🎵 {group}\n"
+    if role:
+        text += f"🎭 {role}\n"
     text += f"📖 {event}\n"
     text += f"🗓 {date}"
 
@@ -386,9 +402,9 @@ def build_messages_for_day(events, current_year):
         messages.append(header + "\n\n" + build_deceased_table(deceased_events))
     
     # Затем добавляем обычные события
-    for item in regular_events:
+    for i, item in enumerate(regular_events):
         # Если умерших нет - шапка идет перед первым обычным событием
-        if not deceased_events and item == regular_events[0]:
+        if not deceased_events and i == 0:
             messages.append(header + "\n\n" + build_regular_message(item, current_year))
         else:
             messages.append(build_regular_message(item, current_year))
