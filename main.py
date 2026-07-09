@@ -54,7 +54,6 @@ ROCK_PHRASES = [
     "Эпохи уходят, но риффы остаются",
     "Один звук может изменить целую эпоху",
     "Музыка — это память, которая умеет звучать",
-
     "Пусть кровь и сталь решат, где правда и где страх",
     "Я выбираю путь, где нет пути назад",
     "Город сгорел, но память не сгорела",
@@ -262,22 +261,101 @@ def ai_generate(item):
 # MESSAGE
 # =====================
 
-def build_message(item, current_year):
+def check_deceased(item):
+    """Проверяет, является ли событие смертью"""
+    event_text = item.get("event", "").lower()
+    # Слова для определения смерти
+    death_keywords = ["смерть", "умер", "погиб", "скончал", "ушла", "ушёл", "трагически"]
+    return any(keyword in event_text for keyword in death_keywords)
 
+def get_gender(item):
+    """Определяет пол по полю gender или контексту"""
+    gender = item.get("gender", "").lower()
+    if gender in ["ж", "жен", "female", "женщина"]:
+        return "female"
+    elif gender in ["м", "муж", "male", "мужчина"]:
+        return "male"
+    
+    # Пытаемся определить по окончанию фамилии или имени
+    artist = item.get("artist", "")
+    # Простая эвристика для русского языка
+    if artist.endswith(("а", "я", "ия", "ья")):
+        return "female"
+    return "male"
+
+def get_death_header(gender):
+    """Возвращает заголовок с учётом рода"""
+    if gender == "female":
+        return "🕯️ <b>УШЛА ИЗ ЖИЗНИ</b>"
+    else:
+        return "🕯️ <b>УШЁЛ ИЗ ЖИЗНИ</b>"
+
+def get_death_text(item, gender):
+    """Возвращает текст события с учётом рода"""
+    event = item.get("event", "")
+    
+    # Заменяем окончания для женского рода
+    if gender == "female":
+        event = event.replace("умер", "ушла")
+        event = event.replace("погиб", "погибла")
+        event = event.replace("скончался", "скончалась")
+        event = event.replace("ушёл", "ушла")
+        event = event.replace("родился", "родилась")
+        event = event.replace("стал", "стала")
+        event = event.replace("был", "была")
+        event = event.replace("трагически погиб", "трагически погибла")
+    
+    return escape(event)
+
+def get_header():
+    """Возвращает общий заголовок - одна строка без переноса"""
+    return "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от бота сообщества 🃏</b>"
+
+def build_deceased_table(items):
+    """Строит таблицу для умерших с общей датой"""
+    # Определяем общую дату
+    first_item = items[0]
+    date = escape(first_item.get("date", ""))
+    
+    # Определяем пол для заголовка (по первому в списке)
+    main_gender = get_gender(first_item)
+    
+    text = get_death_header(main_gender) + "\n\n"
+    text += f"📅 {date}\n\n"
+    
+    for item in items:
+        artist = escape(item.get("artist", ""))
+        group = escape(item.get("group", ""))
+        role = escape(item.get("role", ""))
+        
+        # Получаем событие с учётом рода
+        gender = get_gender(item)
+        event = get_death_text(item, gender)
+        
+        text += f"👤 <b>{artist}</b>\n"
+        text += f"🎵 {group}\n"
+        text += f"🎭 {role}\n"
+        text += f"📖 {event}\n"
+        text += "-----------------------\n"
+    
+    # Добавляем фразу в конце
+    text += f"\n🎧 <i>{get_phrase()}</i>"
+    
+    return text
+
+def build_regular_message(item, current_year):
+    """Строит сообщение для обычного события"""
     artist = escape(item.get("artist", ""))
     group = escape(item.get("group", ""))
     role = escape(item.get("role", ""))    
     event = escape(item.get("event", ""))
     date = escape(item.get("date", ""))
 
-    text = (
-        "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от бота сообщества 🃏</b>\n\n"
-        f"👤 <b>{artist}</b>\n"
-        f"🎵 {group}\n"
-        f"🎭 {role}\n"
-        f"📖 {event}\n"
-        f"🗓 {date}"
-    )
+    text = f"👤 <b>{artist}</b>\n"
+    text += f"🎵 {group}\n"
+    text += f"🎭 {role}\n"
+    text += f"📖 {event}\n"
+    text += f"🗓 {date}"
 
     ai_text = ai_generate(item)
     if ai_text:
@@ -286,7 +364,37 @@ def build_message(item, current_year):
     text += f"\n\n🎧 <i>{get_phrase()}</i>"
 
     return text
+
+def build_messages_for_day(events, current_year):
+    """Разделяет события на обычные и умерших, формирует сообщения в правильном порядке"""
+    regular_events = []
+    deceased_events = []
     
+    for item in events:
+        if check_deceased(item):
+            deceased_events.append(item)
+        else:
+            regular_events.append(item)
+    
+    messages = []
+    
+    # Сначала добавляем шапку
+    header = get_header()
+    
+    # Если есть умершие - добавляем блок с ними
+    if deceased_events:
+        messages.append(header + "\n\n" + build_deceased_table(deceased_events))
+    
+    # Затем добавляем обычные события
+    for item in regular_events:
+        # Если умерших нет - шапка идет перед первым обычным событием
+        if not deceased_events and item == regular_events[0]:
+            messages.append(header + "\n\n" + build_regular_message(item, current_year))
+        else:
+            messages.append(build_regular_message(item, current_year))
+    
+    return messages
+
 # =====================
 # MAIN
 # =====================
@@ -311,66 +419,52 @@ def check_events():
         f"Начата проверка событий за {now.strftime('%d.%m.%Y')}"
     )
 
+    today_events = []
+    
+    # Сначала собираем все сегодняшние события
     for item in events:
-
         try:
-
             event_date = parse_date(item.get("date"))
-
+            
             if event_date is None:
                 invalid_dates += 1
                 continue
-
-            # Сравниваем только день и месяц
-            if (
-                event_date.day != now.day
-                or event_date.month != now.month
-            ):
+            
+            if event_date.day != now.day or event_date.month != now.month:
                 continue
-
+            
             event_id = make_event_id(item, now.year)
-
-            # Защита от дублей внутри одного запуска
+            
             if event_id in processed:
                 continue
-
+                
             processed.add(event_id)
-
-            # Уже отправлялось сегодня
+            
             if event_id in sent:
                 logging.info(
                     f"Пропуск (уже отправлено): "
                     f"{item.get('artist', 'Без имени')}"
                 )
                 continue
-
-            text = build_message(item, now.year)
-
-            if send_message(text):
-
-                sent.add(event_id)
-                sent_count += 1
-
-                logging.info(
-                    f"Отправлено: "
-                    f"{item.get('artist', 'Без имени')}"
-                )
-
-                time.sleep(SEND_DELAY)
-
-            else:
-
-                logging.warning(
-                    f"Не удалось отправить: "
-                    f"{item.get('artist', 'Без имени')}"
-                )
-
+                
+            today_events.append(item)
+            
         except Exception as e:
-
-            logging.exception(
-                f"Ошибка обработки записи: {e}"
-            )
-
+            logging.exception(f"Ошибка обработки записи: {e}")
+    
+    # Формируем сообщения
+    if today_events:
+        messages = build_messages_for_day(today_events, now.year)
+        
+        # Отправляем все сообщения
+        for message in messages:
+            if send_message(message):
+                sent_count += 1
+                logging.info(f"Отправлено сообщение")
+                time.sleep(SEND_DELAY)
+            else:
+                logging.warning("Не удалось отправить сообщение")
+    
     # Сохраняем только сегодняшние отправленные события
     save_sent(sent)
 
