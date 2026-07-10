@@ -297,28 +297,31 @@ def get_death_header(items):
             return "🕯️ <b>УШЁЛ ИЗ ЖИЗНИ</b>"
     else:
         # Несколько человек
-        if has_female and has_male:
-            return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
-        elif has_female and not has_male:
-            return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
-        else:
-            return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
+        return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
 
 def get_death_text(item, gender):
-    """Возвращает текст события с учётом рода и выделяет 'родился' жирным"""
+    """Возвращает текст события без указания смерти (уже есть в шапке) и выделяет 'родился' жирным"""
     event = item.get("event", "")
+    
+    # Убираем слова о смерти из текста события, так как это уже в шапке
+    death_words = ["ушёл из жизни", "ушла из жизни", "ушли из жизни", "умер", "погиб", "скончался", "трагически погиб"]
+    for word in death_words:
+        event = event.replace(word, "").strip()
+        # Убираем лишние пробелы и запятые
+        event = event.replace(",,", ",").replace(" ,", ",")
     
     # Заменяем окончания для женского рода
     if gender == "female":
-        event = event.replace("умер", "ушла")
-        event = event.replace("погиб", "погибла")
-        event = event.replace("скончался", "скончалась")
-        event = event.replace("ушёл", "ушла")
-        event = event.replace("трагически погиб", "трагически погибла")
+        event = event.replace("родился", "родилась")
     
-    # Выделяем "родился" жирным шрифтом
+    # Выделяем "родился/родилась" жирным шрифтом
     event = event.replace("родился", "<b>родился</b>")
     event = event.replace("родилась", "<b>родилась</b>")
+    
+    # Если после очистки остались только смайлики, убираем их
+    event = event.strip()
+    if event in ["😢", "😊", "😢", ""]:
+        event = ""
     
     return escape(event)
 
@@ -340,7 +343,7 @@ def build_deceased_table(items):
         group = escape(item.get("group", ""))
         role = escape(item.get("role", ""))
         
-        # Получаем событие с учётом рода
+        # Получаем событие с учётом рода (уже без указания смерти)
         gender = get_gender(item)
         event = get_death_text(item, gender)
         
@@ -349,7 +352,8 @@ def build_deceased_table(items):
             text += f"🎵 {group}\n"
         if role:
             text += f"🎭 {role}\n"
-        text += f"📖 {event}\n"
+        if event:
+            text += f"📖 {event}\n"
         text += "-----------------------\n"
     
     # Добавляем фразу в конце
