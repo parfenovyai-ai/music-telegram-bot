@@ -325,17 +325,21 @@ def get_death_text(item, gender):
     
     return escape(event)
 
-def get_header():
-    """Возвращает общий заголовок - одна строка без переноса"""
-    return "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от бота сообщества 🃏</b>"
+def get_header(total_events):
+    """Возвращает заголовок в зависимости от количества событий"""
+    if total_events > 1:
+        return "🎸 <b>РОК-СОБЫТИЯ СЕГОДНЯ от бота сообщества 🃏</b>"
+    else:
+        return "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от бота сообщества 🃏</b>"
 
-def build_deceased_table(items):
+def build_deceased_table(items, total_events):
     """Строит таблицу для умерших с общей датой"""
     # Определяем общую дату
     first_item = items[0]
     date = escape(first_item.get("date", ""))
     
-    text = get_death_header(items) + "\n\n"
+    text = get_header(total_events) + "\n\n"
+    text += get_death_header(items) + "\n\n"
     text += f"📅 {date}\n\n"
     
     for item in items:
@@ -361,7 +365,7 @@ def build_deceased_table(items):
     
     return text
 
-def build_regular_message(item, current_year):
+def build_regular_message(item, current_year, total_events, is_first):
     """Строит сообщение для обычного события"""
     artist = escape(item.get("artist", ""))
     group = escape(item.get("group", ""))
@@ -369,7 +373,13 @@ def build_regular_message(item, current_year):
     event = escape(item.get("event", ""))
     date = escape(item.get("date", ""))
 
-    text = f"👤 <b>{artist}</b>\n"
+    # Добавляем шапку только для первого обычного события, если нет умерших
+    if is_first:
+        text = get_header(total_events) + "\n\n"
+    else:
+        text = ""
+    
+    text += f"👤 <b>{artist}</b>\n"
     if group:
         text += f"🎵 {group}\n"
     if role:
@@ -398,20 +408,21 @@ def build_messages_for_day(events, current_year):
     
     messages = []
     
-    # Сначала добавляем шапку
-    header = get_header()
+    # Общее количество событий
+    total_events = len(events)
     
     # Если есть умершие - добавляем блок с ними
     if deceased_events:
-        messages.append(header + "\n\n" + build_deceased_table(deceased_events))
+        messages.append(build_deceased_table(deceased_events, total_events))
     
     # Затем добавляем обычные события
     for i, item in enumerate(regular_events):
-        # Если умерших нет - шапка идет перед первым обычным событием
+        # Шапка добавляется только если это первое сообщение И умерших нет
+        # (если умершие есть, шапка уже была в первом сообщении)
         if not deceased_events and i == 0:
-            messages.append(header + "\n\n" + build_regular_message(item, current_year))
+            messages.append(build_regular_message(item, current_year, total_events, True))
         else:
-            messages.append(build_regular_message(item, current_year))
+            messages.append(build_regular_message(item, current_year, total_events, False))
     
     return messages
 
