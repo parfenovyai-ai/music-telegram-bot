@@ -264,9 +264,14 @@ def ai_generate(item):
 def check_deceased(item):
     """Проверяет, является ли событие смертью"""
     event_text = item.get("event", "").lower()
-    # Слова для определения смерти
     death_keywords = ["смерть", "умер", "погиб", "скончал", "ушла", "ушёл", "трагически"]
     return any(keyword in event_text for keyword in death_keywords)
+
+def check_birth(item):
+    """Проверяет, является ли событие рождением"""
+    event_text = item.get("event", "").lower()
+    birth_keywords = ["родился", "родилась"]
+    return any(keyword in event_text for keyword in birth_keywords)
 
 def get_gender(item):
     """Определяет пол по полю gender или контексту"""
@@ -276,52 +281,41 @@ def get_gender(item):
     elif gender in ["м", "муж", "male", "мужчина"]:
         return "male"
     
-    # Пытаемся определить по окончанию фамилии или имени
     artist = item.get("artist", "")
-    # Простая эвристика для русского языка
     if artist.endswith(("а", "я", "ия", "ья")):
         return "female"
     return "male"
 
+def get_birth_text(item):
+    """Возвращает текст для рождения с учётом рода"""
+    gender = get_gender(item)
+    if gender == "female":
+        return "🎂 <b>РОДИЛАСЬ</b>"
+    else:
+        return "🎂 <b>РОДИЛСЯ</b>"
+
 def get_death_header(items):
     """Возвращает заголовок с учётом количества и пола"""
-    # Проверяем, есть ли женщины среди умерших
     has_female = any(get_gender(item) == "female" for item in items)
-    has_male = any(get_gender(item) == "male" for item in items)
     
     if len(items) == 1:
-        # Один человек
         if has_female:
             return "🕯️ <b>УШЛА ИЗ ЖИЗНИ</b>"
         else:
             return "🕯️ <b>УШЁЛ ИЗ ЖИЗНИ</b>"
     else:
-        # Несколько человек
         return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
 
 def get_death_text(item, gender):
-    """Возвращает текст события без указания смерти (уже есть в шапке) и выделяет 'родился' жирным"""
+    """Возвращает текст события без указания смерти"""
     event = item.get("event", "")
     
-    # Убираем слова о смерти из текста события, так как это уже в шапке
     death_words = ["ушёл из жизни", "ушла из жизни", "ушли из жизни", "умер", "погиб", "скончался", "трагически погиб"]
     for word in death_words:
         event = event.replace(word, "").strip()
-        # Убираем лишние пробелы и запятые
         event = event.replace(",,", ",").replace(" ,", ",")
     
-    # Заменяем окончания для женского рода
-    if gender == "female":
-        event = event.replace("родился", "родилась")
-    
-    # Выделяем "родился/родилась" жирным шрифтом
-    event = event.replace("родился", "<b>родился</b>")
-    event = event.replace("родилась", "<b>родилась</b>")
-    
-    # Если после очистки остались только смайлики, убираем их
-    event = event.strip()
-    if event in ["😢", "😊", "😢", ""]:
-        event = ""
+    event = event.replace("😢", "").replace("😊", "").strip()
     
     return escape(event)
 
@@ -332,14 +326,16 @@ def get_header(total_events):
     else:
         return "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от бота сообщества 🃏</b>"
 
-def build_deceased_table(items, total_events):
+def build_header_message(total_events):
+    """Строит отдельное первое сообщение с заголовком"""
+    return get_header(total_events)
+
+def build_deceased_table(items):
     """Строит таблицу для умерших с общей датой"""
-    # Определяем общую дату
     first_item = items[0]
     date = escape(first_item.get("date", ""))
     
-    text = get_header(total_events) + "\n\n"
-    text += get_death_header(items) + "\n\n"
+    text = get_death_header(items) + "\n\n"
     text += f"📅 {date}\n\n"
     
     for item in items:
@@ -347,7 +343,6 @@ def build_deceased_table(items, total_events):
         group = escape(item.get("group", ""))
         role = escape(item.get("role", ""))
         
-        # Получаем событие с учётом рода (уже без указания смерти)
         gender = get_gender(item)
         event = get_death_text(item, gender)
         
@@ -360,12 +355,11 @@ def build_deceased_table(items, total_events):
             text += f"📖 {event}\n"
         text += "-----------------------\n"
     
-    # Добавляем фразу в конце
     text += f"\n🎧 <i>{get_phrase()}</i>"
     
     return text
 
-def build_regular_message(item, current_year, total_events, is_first):
+def build_regular_message(item, current_year, is_birth):
     """Строит сообщение для обычного события"""
     artist = escape(item.get("artist", ""))
     group = escape(item.get("group", ""))
@@ -373,18 +367,22 @@ def build_regular_message(item, current_year, total_events, is_first):
     event = escape(item.get("event", ""))
     date = escape(item.get("date", ""))
 
-    # Добавляем шапку только для первого обычного события, если нет умерших
-    if is_first:
-        text = get_header(total_events) + "\n\n"
-    else:
-        text = ""
+    text = ""
+    
+    # Если это рождение - выносим "РОДИЛСЯ/РОДИЛАСЬ" вверх
+    if is_birth:
+        birth_text = get_birth_text(item)
+        text += birth_text + "\n\n"
+        # Убираем "Родился/Родилась" из события
+        event = event.replace("Родился", "").replace("Родилась", "").replace("😊", "").strip()
     
     text += f"👤 <b>{artist}</b>\n"
     if group:
         text += f"🎵 {group}\n"
     if role:
         text += f"🎭 {role}\n"
-    text += f"📖 {event}\n"
+    if event:
+        text += f"📖 {event}\n"
     text += f"🗓 {date}"
 
     ai_text = ai_generate(item)
@@ -396,7 +394,7 @@ def build_regular_message(item, current_year, total_events, is_first):
     return text
 
 def build_messages_for_day(events, current_year):
-    """Разделяет события на обычные и умерших, формирует сообщения в правильном порядке"""
+    """Разделяет события на обычные и умерших, формирует сообщения"""
     regular_events = []
     deceased_events = []
     
@@ -411,18 +409,17 @@ def build_messages_for_day(events, current_year):
     # Общее количество событий
     total_events = len(events)
     
-    # Если есть умершие - добавляем блок с ними
+    # Первое сообщение - только заголовок
+    messages.append(build_header_message(total_events))
+    
+    # Второе сообщение - блок с умершими (если есть)
     if deceased_events:
-        messages.append(build_deceased_table(deceased_events, total_events))
+        messages.append(build_deceased_table(deceased_events))
     
     # Затем добавляем обычные события
-    for i, item in enumerate(regular_events):
-        # Шапка добавляется только если это первое сообщение И умерших нет
-        # (если умершие есть, шапка уже была в первом сообщении)
-        if not deceased_events and i == 0:
-            messages.append(build_regular_message(item, current_year, total_events, True))
-        else:
-            messages.append(build_regular_message(item, current_year, total_events, False))
+    for item in regular_events:
+        is_birth = check_birth(item)
+        messages.append(build_regular_message(item, current_year, is_birth))
     
     return messages
 
@@ -438,7 +435,6 @@ def check_events():
     events = load_events()
     sent = load_sent()
 
-    # Оставляем только сегодняшние записи
     sent = {x for x in sent if x.startswith(today_prefix)}
 
     processed = set()
@@ -452,7 +448,6 @@ def check_events():
 
     today_events = []
     
-    # Сначала собираем все сегодняшние события
     for item in events:
         try:
             event_date = parse_date(item.get("date"))
@@ -483,11 +478,9 @@ def check_events():
         except Exception as e:
             logging.exception(f"Ошибка обработки записи: {e}")
     
-    # Формируем сообщения
     if today_events:
         messages = build_messages_for_day(today_events, now.year)
         
-        # Отправляем все сообщения
         for message in messages:
             if send_message(message):
                 sent_count += 1
@@ -496,7 +489,6 @@ def check_events():
             else:
                 logging.warning("Не удалось отправить сообщение")
     
-    # Сохраняем только сегодняшние отправленные события
     save_sent(sent)
 
     if sent_count == 0:
