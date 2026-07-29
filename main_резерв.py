@@ -1,143 +1,508 @@
 import os
 import json
-import datetime
-import threading
 import time
+import hashlib
+import logging
+import random
 import requests
-from flask import Flask
 
-import config
-import utils
+from html import escape
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from requests.adapters import HTTPAdapter
 
-# ---------------- FLASK ----------------
+# =====================
+# CONFIG
+# =====================
 
-app = Flask(__name__)
+BOT_TOKEN = (os.getenv("BOT_TOKEN") or "").strip()
+CHANNEL_ID = (os.getenv("CHANNEL_ID") or "").strip()
+OPENAI_API_KEY = (os.getenv("OPENAI_API_KEY") or "").strip()
 
-@app.route("/")
-def home():
-    return "Bot is running"
+if not BOT_TOKEN or not CHANNEL_ID:
+    raise RuntimeError("Missing BOT_TOKEN or CHANNEL_ID")
 
+API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
-# ---------------- STATE LOCK ----------------
+DB_FILE = "database_deepseek.json"
+SENT_FILE = "sent.json"
 
-scheduler_started = False
+MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
+MAX_RETRIES = 3
+SEND_DELAY = 1
 
-# ---------------- TELEGRAM API ----------------
+# =====================
+# LOGGING
+# =====================
 
-def send_message(text: str):
-    url = f"https://api.telegram.org/bot{config.TOKEN}/sendMessage"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
 
+# =====================
+# PHRASES
+# =====================
+
+ROCK_PHRASES = [
+    "Музыка не стареет — она становится историей",
+    "Каждый аккорд оставляет след во времени",
+    "Рок живёт там, где заканчиваются слова",
+    "История музыки пишется не датами, а звуком",
+    "Где звучит гитара — там начинается память",
+    "Эпохи уходят, но риффы остаются",
+    "Один звук может изменить целую эпоху",
+    "Музыка — это память, которая умеет звучать",
+    "Пусть кровь и сталь решат, где правда и где страх",
+    "Я выбираю путь, где нет пути назад",
+    "Город сгорел, но память не сгорела",
+    "Мы дети грома — нас не удержит тишина",
+    "Время не лечит, оно лишь шрамирует душу",
+    "Сквозь дым и пепел слышен голос судьбы",
+    "Я слышу крик гитар в холодной пустоте",
+    "Пока горит огонь — мы не станем прахом",
+    "Нет света без тьмы, нет веры без боли",
+    "Сталь не предаёт, предают только люди",
+    "Наши песни тяжелее любых оков",
+    "Когда молчит небо — говорит металл",
+    "Мы идём сквозь ад, но не просим пощады",
+    "Каждый аккорд — как удар судьбы",
+    "И даже тьма склоняется перед звуком",
+    "Между светом и тьмой я выбираю гром",
+    "Судьба играет риффами на костях времени",
+    "Мы выжили там, где молчит даже надежда",
+    "Пепел прошлого поёт в моих венах",
+    "Где заканчивается страх — начинается металл",
+    "Я слышу вечность в перегруженных струнах",
+    "Мир трещит, но гитара держит небо",
+    "Мы не ангелы — мы те, кто остался в огне",
+    "Холод стали заменяет нам молитвы",
+    "Каждый аккорд — как удар молота судьбы",
+    "Там, где падают города, рождается звук",
+    "Мы не просим прощения у тишины",
+    "Вой ветра звучит как старый рифф",
+    "Сквозь кровь и снег идёт наш голос",
+    "Нет дороги назад, есть только вперёд",
+    "Металл в душе тяжелее любых цепей",
+    "Мы пишем историю шрамами на гитаре",
+    "Пусть мир сгорит — мы сыграем до конца",
+    "Я живу на границе света и разрушения",
+    "В каждом ударе барабанов — дыхание войны",
+    "Небо рвётся под весом наших аккордов",
+    "Тьма учит нас звучать громче света",
+    "Мы — эхо тех, кто не вернулся",
+    "Риффы режут ночь, как клинки",
+    "Память звучит тяжелее стали",
+    "Сломанные крылья не мешают летать в огне",
+    "Мы дети пепла и перегруженных усилителей",
+    "Время не лечит — оно усиливает боль",
+    "Каждый концерт — это маленький конец света",
+    "Мы поём там, где заканчиваются молитвы",
+    "Стены дрожат от правды в наших песнях",
+    "Гитары говорят то, что молчит человек",
+    "Мы не боимся тишины — мы её ломаем",
+    "Осколки света режут тьму внутри нас",
+    "Наш путь — это звук без возврата",
+    "Металл живёт там, где умирает страх",
+    "Я слышу судьбу в перегруженном усилителе",
+    "Мы не герои — мы свидетели огня",
+    "Город спит, но сцена дышит",
+    "Сломанные мечты звучат громче реальности",
+    "Мы идём сквозь бурю на одной ноте",
+    "Рок не умирает — он становится шрамом",
+    "Каждая струна — это нерв эпохи",
+    "Мы танцуем на руинах старого мира",
+    "Где нет надежды — начинается соло",
+    "Наши песни тяжелее времени",
+    "Мы слышим правду в искажении звука",
+    "Металл — это язык выживших",
+    "И даже тишина боится перегруза",
+    "Мы не исчезаем — мы превращаемся в звук"
+]
+
+last_phrase = None
+
+def get_phrase():
+    global last_phrase
+    phrase = random.choice(ROCK_PHRASES)
+
+    while phrase == last_phrase and len(ROCK_PHRASES) > 1:
+        phrase = random.choice(ROCK_PHRASES)
+
+    last_phrase = phrase
+    return phrase
+
+# =====================
+# OPENAI
+# =====================
+
+client = None
+
+if OPENAI_API_KEY:
     try:
-        requests.post(
-            url,
-            json={
-                "chat_id": config.CHANNEL_ID,
-                "text": text
-            },
-            timeout=10
-        )
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
     except Exception as e:
-        print("TELEGRAM ERROR:", e)
+        logging.warning(f"OpenAI init failed: {e}")
+        client = None
 
+# =====================
+# SESSION
+# =====================
 
-# ---------------- DATA ----------------
+session = requests.Session()
+session.mount("https://", HTTPAdapter(pool_connections=10, pool_maxsize=10))
 
-def load_rock_events():
-    path = os.path.join(os.path.dirname(__file__), "database.json")
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+# =====================
+# FILES
+# =====================
 
-
-def get_events():
-    return load_rock_events()
-
-
-# ---------------- DATE PARSE ----------------
-
-def parse_date(date_str: str):
-    parts = date_str.split("-")
-
+def load_json(path, default):
     try:
-        # YYYY-MM-DD
-        if len(parts) == 3 and len(parts[0]) == 4:
-            return int(parts[2]), int(parts[1])
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return default
 
-        # DD-MM-YYYY
-        if len(parts) == 3:
-            return int(parts[0]), int(parts[1])
 
-    except:
+def save_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def load_events():
+    return load_json(DB_FILE, [])
+
+
+def load_sent():
+    data = load_json(SENT_FILE, [])
+    return set(data)
+
+
+def save_sent(sent):
+    save_json(SENT_FILE, sorted(sent))
+
+# =====================
+# DATE
+# =====================
+
+def parse_date(date_str):
+    if not date_str:
         return None
 
+    date_str = date_str.strip()
 
-# ---------------- CORE LOGIC ----------------
-
-def check_events():
-    today = datetime.datetime.now()
-    day, month = today.day, today.month
-
-    print(f"[CHECK] {day}-{month}")
-
-    state = utils.load_state()
-    sent = state.get("sent", [])
-
-    for item in get_events():
-        parsed = parse_date(item.get("date", ""))
-        if not parsed:
+    for fmt in ("%d-%m-%Y", "%d-%m"):
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
             continue
 
-        d, m = parsed
+    return None
 
-        if d != day or m != month:
-            continue
+# =====================
+# TELEGRAM
+# =====================
 
-        event_id = utils.make_event_id(item)
+def send_message(text):
+    payload = {
+        "chat_id": CHANNEL_ID,
+        "text": text,
+        "parse_mode": "HTML"
+    }
 
-        if event_id in sent:
-            continue
+    for _ in range(MAX_RETRIES):
+        try:
+            r = session.post(API_URL + "/sendMessage", data=payload, timeout=15)
+            if r.status_code == 200:
+                return True
+        except Exception as e:
+            logging.warning(f"Telegram error: {e}")
 
-        text = (
-            "🎸 РОК-СОБЫТИЕ СЕГОДНЯ\n\n"
-            f"👤 {item.get('artist', 'Unknown')}\n"
-            f"🎵 {item.get('group', 'Unknown')}\n"
-            f"📅 {item.get('event', 'Unknown')}\n"
-            f"🗓 {item.get('date', '')}"
+        time.sleep(2)
+
+    return False
+
+# =====================
+# EVENT ID
+# =====================
+
+def make_event_id(item, year):
+    raw = json.dumps(item, ensure_ascii=False, sort_keys=True)
+    return f"{year}_{hashlib.sha256(raw.encode()).hexdigest()}"
+
+# =====================
+# AI
+# =====================
+
+def ai_generate(item):
+    if not client:
+        return None
+
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {"role": "system", "content": "Ты музыкальный редактор."},
+                {"role": "user", "content": f"Напиши 1–3 предложения о событии: {item.get('event')}"}
+            ],
+            temperature=1.0,
+            max_tokens=150
         )
 
-        send_message(text)
+        return res.choices[0].message.content.strip()
 
-        sent.append(event_id)
-        state["sent"] = sent
-        utils.save_state(state)
+    except Exception as e:
+        logging.warning(f"AI error: {e}")
+        return None
 
-        print(f"SENT: {event_id}")
+# =====================
+# MESSAGE
+# =====================
 
+def check_deceased(item):
+    """Проверяет, является ли событие смертью"""
+    event_text = item.get("event", "").lower()
+    death_keywords = ["смерть", "умер", "погиб", "скончал", "ушла", "ушёл", "трагически"]
+    return any(keyword in event_text for keyword in death_keywords)
 
-# ---------------- SCHEDULER ----------------
+def check_birth(item):
+    """Проверяет, является ли событие рождением"""
+    event_text = item.get("event", "").lower()
+    birth_keywords = ["родился", "родилась"]
+    return any(keyword in event_text for keyword in birth_keywords)
 
-def scheduler_loop():
-    while True:
+def get_gender(item):
+    """Определяет пол по полю gender или контексту"""
+    gender = item.get("gender", "").lower()
+    if gender in ["ж", "жен", "female", "женщина"]:
+        return "female"
+    elif gender in ["м", "муж", "male", "мужчина"]:
+        return "male"
+    
+    artist = item.get("artist", "")
+    if artist.endswith(("а", "я", "ия", "ья")):
+        return "female"
+    return "male"
+
+def get_birth_text(item):
+    """Возвращает текст для рождения с учётом рода"""
+    gender = get_gender(item)
+    if gender == "female":
+        return "🎂 <b>РОДИЛАСЬ</b>"
+    else:
+        return "🎂 <b>РОДИЛСЯ</b>"
+
+def get_death_header(items):
+    """Возвращает заголовок с учётом количества и пола"""
+    has_female = any(get_gender(item) == "female" for item in items)
+    
+    if len(items) == 1:
+        if has_female:
+            return "🕯️ <b>УШЛА ИЗ ЖИЗНИ</b>"
+        else:
+            return "🕯️ <b>УШЁЛ ИЗ ЖИЗНИ</b>"
+    else:
+        return "🕯️ <b>УШЛИ ИЗ ЖИЗНИ</b>"
+
+def get_death_text(item, gender):
+    """Возвращает текст события без указания смерти"""
+    event = item.get("event", "")
+    
+    death_words = ["ушёл из жизни", "ушла из жизни", "ушли из жизни", "умер", "погиб", "скончался", "трагически погиб"]
+    for word in death_words:
+        event = event.replace(word, "").strip()
+        event = event.replace(",,", ",").replace(" ,", ",")
+    
+    event = event.replace("😢", "").replace("😊", "").strip()
+    
+    return escape(event)
+
+def get_header(total_events):
+    """Возвращает заголовок в зависимости от количества событий"""
+    if total_events > 1:
+        return "🎸 <b>РОК-СОБЫТИЯ СЕГОДНЯ от бота сообщества 🃏</b>"
+    else:
+        return "🎸 <b>РОК-СОБЫТИЕ СЕГОДНЯ от бота сообщества 🃏</b>"
+
+def build_header_message(total_events):
+    """Строит отдельное первое сообщение с заголовком"""
+    return get_header(total_events)
+
+def build_deceased_table(items):
+    """Строит таблицу для умерших с общей датой"""
+    first_item = items[0]
+    date = escape(first_item.get("date", ""))
+    
+    text = get_death_header(items) + "\n\n"
+    text += f"📅 {date}\n\n"
+    
+    for item in items:
+        artist = escape(item.get("artist", ""))
+        group = escape(item.get("group", ""))
+        role = escape(item.get("role", ""))
+        
+        gender = get_gender(item)
+        event = get_death_text(item, gender)
+        
+        text += f"👤 <b>{artist}</b>\n"
+        if group:
+            text += f"🎵 {group}\n"
+        if role:
+            text += f"🎭 {role}\n"
+        if event:
+            text += f"📖 {event}\n"
+        text += "-----------------------\n"
+    
+    text += f"\n🎧 <i>{get_phrase()}</i>"
+    
+    return text
+
+def build_regular_message(item, current_year, is_birth):
+    """Строит сообщение для обычного события"""
+    artist = escape(item.get("artist", ""))
+    group = escape(item.get("group", ""))
+    role = escape(item.get("role", ""))    
+    event = escape(item.get("event", ""))
+    date = escape(item.get("date", ""))
+
+    text = ""
+    
+    # Если это рождение - выносим "РОДИЛСЯ/РОДИЛАСЬ" вверх
+    if is_birth:
+        birth_text = get_birth_text(item)
+        text += birth_text + "\n\n"
+        # Убираем "Родился/Родилась" из события
+        event = event.replace("Родился", "").replace("Родилась", "").replace("😊", "").strip()
+    
+    text += f"👤 <b>{artist}</b>\n"
+    if group:
+        text += f"🎵 {group}\n"
+    if role:
+        text += f"🎭 {role}\n"
+    if event:
+        text += f"📖 {event}\n"
+    text += f"🗓 {date}"
+
+    ai_text = ai_generate(item)
+    if ai_text:
+        text += f"\n\n🧠 <i>{ai_text}</i>"
+
+    text += f"\n\n🎧 <i>{get_phrase()}</i>"
+
+    return text
+
+def build_messages_for_day(events, current_year):
+    """Разделяет события на обычные и умерших, формирует сообщения"""
+    regular_events = []
+    deceased_events = []
+    
+    for item in events:
+        if check_deceased(item):
+            deceased_events.append(item)
+        else:
+            regular_events.append(item)
+    
+    messages = []
+    
+    # Общее количество событий
+    total_events = len(events)
+    
+    # Первое сообщение - только заголовок
+    messages.append(build_header_message(total_events))
+    
+    # Второе сообщение - блок с умершими (если есть)
+    if deceased_events:
+        messages.append(build_deceased_table(deceased_events))
+    
+    # Затем добавляем обычные события
+    for item in regular_events:
+        is_birth = check_birth(item)
+        messages.append(build_regular_message(item, current_year, is_birth))
+    
+    return messages
+
+# =====================
+# MAIN
+# =====================
+
+def check_events():
+
+    now = datetime.now(MOSCOW_TZ)
+    today_prefix = now.strftime("%Y-%m-%d")
+
+    events = load_events()
+    sent = load_sent()
+
+    sent = {x for x in sent if x.startswith(today_prefix)}
+
+    processed = set()
+
+    sent_count = 0
+    invalid_dates = 0
+
+    logging.info(
+        f"Начата проверка событий за {now.strftime('%d.%m.%Y')}"
+    )
+
+    today_events = []
+    
+    for item in events:
         try:
-            check_events()
+            event_date = parse_date(item.get("date"))
+            
+            if event_date is None:
+                invalid_dates += 1
+                continue
+            
+            if event_date.day != now.day or event_date.month != now.month:
+                continue
+            
+            event_id = make_event_id(item, now.year)
+            
+            if event_id in processed:
+                continue
+                
+            processed.add(event_id)
+            
+            if event_id in sent:
+                logging.info(
+                    f"Пропуск (уже отправлено): "
+                    f"{item.get('artist', 'Без имени')}"
+                )
+                continue
+                
+            today_events.append(item)
+            
         except Exception as e:
-            print("SCHEDULER ERROR:", e)
+            logging.exception(f"Ошибка обработки записи: {e}")
+    
+    if today_events:
+        messages = build_messages_for_day(today_events, now.year)
+        
+        for message in messages:
+            if send_message(message):
+                sent_count += 1
+                logging.info(f"Отправлено сообщение")
+                time.sleep(SEND_DELAY)
+            else:
+                logging.warning("Не удалось отправить сообщение")
+    
+    save_sent(sent)
 
-        time.sleep(60)
+    if sent_count == 0:
+        logging.info("Сегодня событий для публикации не найдено.")
 
+    logging.info(
+        "Проверка завершена | "
+        f"Отправлено: {sent_count} | "
+        f"Некорректных дат: {invalid_dates}"
+    )
 
-def start_scheduler():
-    global scheduler_started
+# =====================
+# ENTRY
+# =====================
 
-    if scheduler_started:
-        return
-
-    scheduler_started = True
-
-    thread = threading.Thread(target=scheduler_loop, daemon=True)
-    thread.start()
-
-
-# ---------------- START ----------------
-
-start_scheduler()
+if __name__ == "__main__":
+    check_events()
