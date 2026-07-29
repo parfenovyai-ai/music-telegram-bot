@@ -5,11 +5,13 @@ import hashlib
 import logging
 import random
 import requests
+import re
 
 from html import escape
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from requests.adapters import HTTPAdapter
+from bs4 import BeautifulSoup
 
 # =====================
 # CONFIG
@@ -26,6 +28,7 @@ API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 DB_FILE = "database_deepseek.json"
 SENT_FILE = "sent.json"
+FACTS_CACHE_FILE = "facts_cache.json"
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
@@ -42,96 +45,114 @@ logging.basicConfig(
 )
 
 # =====================
-# PHRASES
+# GOOGLE/WIKIPEDIA FACT FETCHER
 # =====================
 
-ROCK_PHRASES = [
-    "Музыка не стареет — она становится историей",
-    "Каждый аккорд оставляет след во времени",
-    "Рок живёт там, где заканчиваются слова",
-    "История музыки пишется не датами, а звуком",
-    "Где звучит гитара — там начинается память",
-    "Эпохи уходят, но риффы остаются",
-    "Один звук может изменить целую эпоху",
-    "Музыка — это память, которая умеет звучать",
-    "Пусть кровь и сталь решат, где правда и где страх",
-    "Я выбираю путь, где нет пути назад",
-    "Город сгорел, но память не сгорела",
-    "Мы дети грома — нас не удержит тишина",
-    "Время не лечит, оно лишь шрамирует душу",
-    "Сквозь дым и пепел слышен голос судьбы",
-    "Я слышу крик гитар в холодной пустоте",
-    "Пока горит огонь — мы не станем прахом",
-    "Нет света без тьмы, нет веры без боли",
-    "Сталь не предаёт, предают только люди",
-    "Наши песни тяжелее любых оков",
-    "Когда молчит небо — говорит металл",
-    "Мы идём сквозь ад, но не просим пощады",
-    "Каждый аккорд — как удар судьбы",
-    "И даже тьма склоняется перед звуком",
-    "Между светом и тьмой я выбираю гром",
-    "Судьба играет риффами на костях времени",
-    "Мы выжили там, где молчит даже надежда",
-    "Пепел прошлого поёт в моих венах",
-    "Где заканчивается страх — начинается металл",
-    "Я слышу вечность в перегруженных струнах",
-    "Мир трещит, но гитара держит небо",
-    "Мы не ангелы — мы те, кто остался в огне",
-    "Холод стали заменяет нам молитвы",
-    "Каждый аккорд — как удар молота судьбы",
-    "Там, где падают города, рождается звук",
-    "Мы не просим прощения у тишины",
-    "Вой ветра звучит как старый рифф",
-    "Сквозь кровь и снег идёт наш голос",
-    "Нет дороги назад, есть только вперёд",
-    "Металл в душе тяжелее любых цепей",
-    "Мы пишем историю шрамами на гитаре",
-    "Пусть мир сгорит — мы сыграем до конца",
-    "Я живу на границе света и разрушения",
-    "В каждом ударе барабанов — дыхание войны",
-    "Небо рвётся под весом наших аккордов",
-    "Тьма учит нас звучать громче света",
-    "Мы — эхо тех, кто не вернулся",
-    "Риффы режут ночь, как клинки",
-    "Память звучит тяжелее стали",
-    "Сломанные крылья не мешают летать в огне",
-    "Мы дети пепла и перегруженных усилителей",
-    "Время не лечит — оно усиливает боль",
-    "Каждый концерт — это маленький конец света",
-    "Мы поём там, где заканчиваются молитвы",
-    "Стены дрожат от правды в наших песнях",
-    "Гитары говорят то, что молчит человек",
-    "Мы не боимся тишины — мы её ломаем",
-    "Осколки света режут тьму внутри нас",
-    "Наш путь — это звук без возврата",
-    "Металл живёт там, где умирает страх",
-    "Я слышу судьбу в перегруженном усилителе",
-    "Мы не герои — мы свидетели огня",
-    "Город спит, но сцена дышит",
-    "Сломанные мечты звучат громче реальности",
-    "Мы идём сквозь бурю на одной ноте",
-    "Рок не умирает — он становится шрамом",
-    "Каждая струна — это нерв эпохи",
-    "Мы танцуем на руинах старого мира",
-    "Где нет надежды — начинается соло",
-    "Наши песни тяжелее времени",
-    "Мы слышим правду в искажении звука",
-    "Металл — это язык выживших",
-    "И даже тишина боится перегруза",
-    "Мы не исчезаем — мы превращаемся в звук"
-]
-
-last_phrase = None
-
-def get_phrase():
-    global last_phrase
-    phrase = random.choice(ROCK_PHRASES)
-
-    while phrase == last_phrase and len(ROCK_PHRASES) > 1:
-        phrase = random.choice(ROCK_PHRASES)
-
-    last_phrase = phrase
-    return phrase
+class FactFetcher:
+    def __init__(self):
+        self.cache = self.load_cache()
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+    
+    def load_cache(self):
+        try:
+            with open(FACTS_CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except:
+            return {}
+    
+    def save_cache(self):
+        with open(FACTS_CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(self.cache, f, ensure_ascii=False, indent=2)
+    
+    def get_wikipedia_url(self, artist_name):
+        """Поиск страницы Википедии через Google"""
+        search_query = f"{artist_name} музыкант википедия"
+        search_url = f"https://www.google.com/search?q={search_query}"
+        
+        try:
+            response = self.session.get(search_url, timeout=10)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Ищем ссылки на Википедию
+            for link in soup.find_all('a'):
+                href = link.get('href', '')
+                if 'wikipedia.org' in href and '/wiki/' in href:
+                    # Очищаем URL от параметров
+                    match = re.search(r'https?://[a-z]+\.wikipedia\.org/wiki/[^?&"]+', href)
+                    if match:
+                        return match.group(0)
+            
+            return None
+        except Exception as e:
+            logging.warning(f"Error searching Wikipedia: {e}")
+            return None
+    
+    def extract_facts_from_wikipedia(self, url):
+        """Извлечение фактов из Википедии"""
+        try:
+            response = self.session.get(url, timeout=10)
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Ищем основной контент
+            content = soup.find('div', {'class': 'mw-parser-output'})
+            if not content:
+                return None
+            
+            # Собираем факты из первого абзаца
+            paragraphs = content.find_all('p', recursive=False)
+            facts = []
+            
+            for p in paragraphs[:3]:  # Берем первые 3 абзаца
+                text = p.get_text().strip()
+                # Очищаем текст от скобок и лишнего
+                text = re.sub(r'\[[0-9]+\]', '', text)
+                if len(text) > 50:  # Только содержательные абзацы
+                    facts.append(text)
+            
+            # Ищем факты в инфобоксе
+            infobox = soup.find('table', {'class': 'infobox'})
+            if infobox:
+                rows = infobox.find_all('tr')
+                for row in rows:
+                    cells = row.find_all(['th', 'td'])
+                    if len(cells) >= 2:
+                        label = cells[0].get_text().strip()
+                        value = cells[1].get_text().strip()
+                        if label and value and len(value) > 20:
+                            facts.append(f"{label}: {value}")
+            
+            return facts[:5]  # Ограничиваем 5 фактами
+            
+        except Exception as e:
+            logging.warning(f"Error extracting facts from Wikipedia: {e}")
+            return None
+    
+    def get_facts_for_artist(self, artist_name):
+        """Получение фактов для артиста"""
+        # Проверяем кеш
+        if artist_name in self.cache:
+            return self.cache[artist_name]
+        
+        # Ищем Википедию
+        wiki_url = self.get_wikipedia_url(artist_name)
+        if wiki_url:
+            facts = self.extract_facts_from_wikipedia(wiki_url)
+            if facts:
+                self.cache[artist_name] = facts
+                self.save_cache()
+                return facts
+        
+        return None
+    
+    def get_random_fact(self, artist_name):
+        """Получение случайного факта"""
+        facts = self.get_facts_for_artist(artist_name)
+        if facts:
+            return random.choice(facts)
+        return None
 
 # =====================
 # OPENAI
@@ -261,6 +282,8 @@ def ai_generate(item):
 # MESSAGE
 # =====================
 
+fact_fetcher = FactFetcher()
+
 def check_deceased(item):
     """Проверяет, является ли событие смертью"""
     event_text = item.get("event", "").lower()
@@ -355,7 +378,13 @@ def build_deceased_table(items):
             text += f"📖 {event}\n"
         text += "-----------------------\n"
     
-    text += f"\n🎧 <i>{get_phrase()}</i>"
+    # Добавляем факт о последнем музыканте
+    last_artist = items[-1].get("artist", "")
+    fact = fact_fetcher.get_random_fact(last_artist)
+    if fact:
+        text += f"\n📌 <i>{fact}</i>"
+    else:
+        text += f"\n🎧 <i>Музыка не стареет — она становится историей</i>"
     
     return text
 
@@ -389,7 +418,12 @@ def build_regular_message(item, current_year, is_birth):
     if ai_text:
         text += f"\n\n🧠 <i>{ai_text}</i>"
 
-    text += f"\n\n🎧 <i>{get_phrase()}</i>"
+    # Добавляем факт о музыканте
+    fact = fact_fetcher.get_random_fact(item.get("artist", ""))
+    if fact:
+        text += f"\n\n📌 <i>{fact}</i>"
+    else:
+        text += f"\n\n🎧 <i>Музыка не стареет — она становится историей</i>"
 
     return text
 
