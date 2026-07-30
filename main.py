@@ -43,7 +43,7 @@ logging.basicConfig(
 )
 
 # =====================
-# FACT FETCHER (без BeautifulSoup)
+# FACT FETCHER
 # =====================
 
 class FactFetcher:
@@ -69,12 +69,10 @@ class FactFetcher:
             pass
     
     def get_facts_for_artist(self, artist_name):
-        """Получение фактов через Wikipedia API (без BeautifulSoup)"""
         if artist_name in self.cache:
             return self.cache[artist_name]
         
         try:
-            # Поиск статьи в русской Википедии
             search_url = "https://ru.wikipedia.org/w/api.php"
             params = {
                 "action": "query",
@@ -89,7 +87,6 @@ class FactFetcher:
             if data.get('query', {}).get('search'):
                 page_title = data['query']['search'][0]['title']
                 
-                # Получение содержимого
                 params = {
                     "action": "query",
                     "prop": "extracts",
@@ -105,7 +102,6 @@ class FactFetcher:
                 for page_id, page_data in pages.items():
                     if 'extract' in page_data:
                         extract = page_data['extract']
-                        # Разбиваем на предложения
                         sentences = extract.replace('\n', ' ').split('. ')
                         facts = []
                         for sentence in sentences[:3]:
