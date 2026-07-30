@@ -18,37 +18,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Show project files
-        run: |
-          pwd
-          ls -la
-          echo "===== requirements.txt ====="
-          if [ -f requirements.txt ]; then
-            cat requirements.txt
-          else
-            echo "requirements.txt not found"
-          fi
-          echo "===== First 20 lines of main.py ====="
-          if [ -f main.py ]; then
-            head -20 main.py
-          else
-            echo "main.py not found!"
-          fi
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install requests openai
-
-      - name: Verify installation
-        run: |
-          python --version
-          which python
-          pip --version
-          pip list
-          python -c "import requests; print('✅ requests OK')"
-          python -c "import openai; print('✅ openai OK')"
-          echo "✅ All dependencies installed!"
 
       - name: Run bot
         env:
