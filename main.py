@@ -26,7 +26,6 @@ API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 DB_FILE = "database_deepseek.json"
 SENT_FILE = "sent.json"
-FACTS_CACHE_FILE = "facts_cache.json"
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
@@ -43,86 +42,113 @@ logging.basicConfig(
 )
 
 # =====================
-# FACT FETCHER
+# ROCK PHRASES
 # =====================
 
-class FactFetcher:
-    def __init__(self):
-        self.cache = self.load_cache()
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
-    
-    def load_cache(self):
-        try:
-            with open(FACTS_CACHE_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except:
-            return {}
-    
-    def save_cache(self):
-        try:
-            with open(FACTS_CACHE_FILE, "w", encoding="utf-8") as f:
-                json.dump(self.cache, f, ensure_ascii=False, indent=2)
-        except:
-            pass
-    
-    def get_facts_for_artist(self, artist_name):
-        if artist_name in self.cache:
-            return self.cache[artist_name]
-        
-        try:
-            search_url = "https://ru.wikipedia.org/w/api.php"
-            params = {
-                "action": "query",
-                "list": "search",
-                "srsearch": artist_name,
-                "format": "json",
-                "srlimit": 1
-            }
-            response = self.session.get(search_url, params=params, timeout=10)
-            data = response.json()
-            
-            if data.get('query', {}).get('search'):
-                page_title = data['query']['search'][0]['title']
-                
-                params = {
-                    "action": "query",
-                    "prop": "extracts",
-                    "exintro": True,
-                    "explaintext": True,
-                    "titles": page_title,
-                    "format": "json"
-                }
-                response = self.session.get(search_url, params=params, timeout=10)
-                data = response.json()
-                
-                pages = data.get('query', {}).get('pages', {})
-                for page_id, page_data in pages.items():
-                    if 'extract' in page_data:
-                        extract = page_data['extract']
-                        sentences = extract.replace('\n', ' ').split('. ')
-                        facts = []
-                        for sentence in sentences[:3]:
-                            if len(sentence) > 50:
-                                facts.append(sentence.strip() + '.')
-                        if facts:
-                            self.cache[artist_name] = facts
-                            self.save_cache()
-                            return facts
-        except Exception as e:
-            logging.warning(f"Error getting facts: {e}")
-        
-        return None
-    
-    def get_random_fact(self, artist_name):
-        facts = self.get_facts_for_artist(artist_name)
-        if facts:
-            return random.choice(facts)
-        return None
+ROCK_PHRASES = [
+    "🎸 Музыка не стареет — она становится историей",
+    "🎸 Каждый аккорд оставляет след во времени",
+    "🎸 Рок живёт там, где заканчиваются слова",
+    "🎸 История музыки пишется не датами, а звуком",
+    "🎸 Где звучит гитара — там начинается память",
+    "🎸 Эпохи уходят, но риффы остаются",
+    "🎸 Один звук может изменить целую эпоху",
+    "🎸 Музыка — это память, которая умеет звучать",
+    "🎸 Пусть кровь и сталь решат, где правда и где страх",
+    "🎸 Я выбираю путь, где нет пути назад",
+    "🎸 Город сгорел, но память не сгорела",
+    "🎸 Мы дети грома — нас не удержит тишина",
+    "🎸 Время не лечит, оно лишь шрамирует душу",
+    "🎸 Сквозь дым и пепел слышен голос судьбы",
+    "🎸 Я слышу крик гитар в холодной пустоте",
+    "🎸 Пока горит огонь — мы не станем прахом",
+    "🎸 Нет света без тьмы, нет веры без боли",
+    "🎸 Сталь не предаёт, предают только люди",
+    "🎸 Наши песни тяжелее любых оков",
+    "🎸 Когда молчит небо — говорит металл",
+    "🎸 Мы идём сквозь ад, но не просим пощады",
+    "🎸 Каждый аккорд — как удар судьбы",
+    "🎸 И даже тьма склоняется перед звуком",
+    "🎸 Между светом и тьмой я выбираю гром",
+    "🎸 Судьба играет риффами на костях времени",
+    "🎸 Мы выжили там, где молчит даже надежда",
+    "🎸 Пепел прошлого поёт в моих венах",
+    "🎸 Где заканчивается страх — начинается металл",
+    "🎸 Я слышу вечность в перегруженных струнах",
+    "🎸 Мир трещит, но гитара держит небо",
+    "🎸 Мы не ангелы — мы те, кто остался в огне",
+    "🎸 Холод стали заменяет нам молитвы",
+    "🎸 Каждый аккорд — как удар молота судьбы",
+    "🎸 Там, где падают города, рождается звук",
+    "🎸 Мы не просим прощения у тишины",
+    "🎸 Вой ветра звучит как старый рифф",
+    "🎸 Сквозь кровь и снег идёт наш голос",
+    "🎸 Нет дороги назад, есть только вперёд",
+    "🎸 Металл в душе тяжелее любых цепей",
+    "🎸 Мы пишем историю шрамами на гитаре",
+    "🎸 Пусть мир сгорит — мы сыграем до конца",
+    "🎸 Я живу на границе света и разрушения",
+    "🎸 В каждом ударе барабанов — дыхание войны",
+    "🎸 Небо рвётся под весом наших аккордов",
+    "🎸 Тьма учит нас звучать громче света",
+    "🎸 Мы — эхо тех, кто не вернулся",
+    "🎸 Риффы режут ночь, как клинки",
+    "🎸 Память звучит тяжелее стали",
+    "🎸 Сломанные крылья не мешают летать в огне",
+    "🎸 Мы дети пепла и перегруженных усилителей",
+    "🎸 Время не лечит — оно усиливает боль",
+    "🎸 Каждый концерт — это маленький конец света",
+    "🎸 Мы поём там, где заканчиваются молитвы",
+    "🎸 Стены дрожат от правды в наших песнях",
+    "🎸 Гитары говорят то, что молчит человек",
+    "🎸 Мы не боимся тишины — мы её ломаем",
+    "🎸 Осколки света режут тьму внутри нас",
+    "🎸 Наш путь — это звук без возврата",
+    "🎸 Металл живёт там, где умирает страх",
+    "🎸 Я слышу судьбу в перегруженном усилителе",
+    "🎸 Мы не герои — мы свидетели огня",
+    "🎸 Город спит, но сцена дышит",
+    "🎸 Сломанные мечты звучат громче реальности",
+    "🎸 Мы идём сквозь бурю на одной ноте",
+    "🎸 Рок не умирает — он становится шрамом",
+    "🎸 Каждая струна — это нерв эпохи",
+    "🎸 Мы танцуем на руинах старого мира",
+    "🎸 Где нет надежды — начинается соло",
+    "🎸 Наши песни тяжелее времени",
+    "🎸 Мы слышим правду в искажении звука",
+    "🎸 Металл — это язык выживших",
+    "🎸 И даже тишина боится перегруза",
+    "🎸 Мы не исчезаем — мы превращаемся в звук",
+    "🎸 Рок-н-ролл — это не музыка, это образ жизни",
+    "🎸 Громче! Только так нас услышат",
+    "🎸 Мы рождены, чтобы играть громко",
+    "🎸 Музыка — это голос души",
+    "🎸 Пока есть гитара — есть надежда",
+    "🎸 Рок лечит, когда слова бессильны",
+    "🎸 Усилитель — это наш голос",
+    "🎸 Сцена — наш дом",
+    "🎸 Мы не умираем, мы уходим в рифф",
+    "🎸 Рок — это свобода быть собой",
+    "🎸 В каждом риффе — частица вечности",
+    "🎸 Гитара — это оружие мира",
+    "🎸 Рок объединяет всех, кто слышит",
+    "🎸 Наша музыка — наша правда",
+    "🎸 Играй так, как будто это последний раз",
+    "🎸 Рок не прощает слабых, но даёт силу",
+    "🎸 Мы — музыка, мы — вечность",
+    "🎸 Разбуди мир своим звуком",
+    "🎸 Рок жив, пока мы живы"
+]
 
-fact_fetcher = FactFetcher()
+last_phrase = None
+
+def get_phrase():
+    global last_phrase
+    phrase = random.choice(ROCK_PHRASES)
+    while phrase == last_phrase and len(ROCK_PHRASES) > 1:
+        phrase = random.choice(ROCK_PHRASES)
+    last_phrase = phrase
+    return phrase
 
 # =====================
 # OPENAI
@@ -314,12 +340,7 @@ def build_deceased_table(items):
         if event:
             text += f"📖 {event}\n"
         text += "-----------------------\n"
-    last_artist = items[-1].get("artist", "")
-    fact = fact_fetcher.get_random_fact(last_artist)
-    if fact:
-        text += f"\n📌 <i>{fact}</i>"
-    else:
-        text += f"\n🎧 <i>Музыка не стареет — она становится историей</i>"
+    text += f"\n{get_phrase()}"
     return text
 
 def build_regular_message(item, current_year, is_birth):
@@ -344,11 +365,7 @@ def build_regular_message(item, current_year, is_birth):
     ai_text = ai_generate(item)
     if ai_text:
         text += f"\n\n🧠 <i>{ai_text}</i>"
-    fact = fact_fetcher.get_random_fact(item.get("artist", ""))
-    if fact:
-        text += f"\n\n📌 <i>{fact}</i>"
-    else:
-        text += f"\n\n🎧 <i>Музыка не стареет — она становится историей</i>"
+    text += f"\n\n{get_phrase()}"
     return text
 
 def build_messages_for_day(events, current_year):
