@@ -18,13 +18,41 @@ jobs:
       with:
         python-version: '3.11'
     
+    - name: Debug - Show all files
+      run: |
+        echo "=== Current directory ==="
+        pwd
+        echo "=== All files ==="
+        ls -la
+        echo "=== Check for main.py ==="
+        if [ -f "main.py" ]; then
+          echo "✅ main.py found"
+          echo "=== First 10 lines of main.py ==="
+          head -n 10 main.py
+        else
+          echo "❌ main.py NOT found!"
+          echo "=== Looking for .py files ==="
+          find . -name "*.py"
+        fi
+        echo "=== Check for requirements.txt ==="
+        if [ -f "requirements.txt" ]; then
+          echo "✅ requirements.txt found"
+          cat requirements.txt
+        else
+          echo "❌ requirements.txt NOT found"
+        fi
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install beautifulsoup4 lxml requests openai
     
-    - name: List files (для отладки)
-      run: ls -la
+    - name: Verify installation
+      run: |
+        python -c "import bs4; print('✅ bs4 installed')"
+        python -c "import lxml; print('✅ lxml installed')"
+        python -c "import requests; print('✅ requests installed')"
+        python -c "import openai; print('✅ openai installed')"
     
     - name: Run bot
       env:
