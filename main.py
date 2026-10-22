@@ -628,7 +628,8 @@ def verified_quote(item: dict) -> list[str]:
         if len(quote.split()) > 10:
             LOG.warning("Слишком длинная цитата из песни (%s)", item.get("artist", "?"))
             return []
-    result = [f"💬 <i>«{html(quote.strip('«»\" '), 260)}»</i>"]
+    clean_quote = quote.strip("«»\" ")
+    result = [f"💬 <i>«{html(clean_quote, 260)}»</i>"]
     raw_url = as_text(item.get("quote_url") or item.get("quote_source_url"))
     src = f"Источник: {html(source, 180)}"
     if raw_url and len(raw_url) <= 500:
