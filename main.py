@@ -14,7 +14,7 @@
 - отдельные посты с датой: памятные даты и дни рождения (разные реакции);
 - дата каждого ушедшего музыканта указывается отдельно, с его годом;
 - возраст / годовщина рассчитываются только при наличии года в базе;
-- если возраст вычислить нельзя, выводится «нет данных»;
+- если возраст вычислить нельзя, показывается «Секрет»;
 - записи sent.json отмечаются сразу после успешной отправки;
 - никаких описаний/биографий из поля event в карточках рождения и памяти;
 - максимум две рубрики: «УШЁЛ/УШЛА/УШЛИ ИЗ ЖИЗНИ» и «РОДИЛСЯ/РОДИЛАСЬ/РОДИЛИСЬ», каждая отдельным сообщением;
@@ -644,7 +644,7 @@ def format_birth(item: dict, today: date,
     birthday, death = known_dates(item, people)
     if birthday:
         lines.append(f"📅 {birthday.display()}")
-    # Без года рождения не вычисляем возраст и не подставляем дату.
+    # Без достоверного года рождения не вычисляем возраст и не подставляем дату.
     if birthday is not None and birthday.year is not None and birthday.year <= today.year:
         years = today.year - birthday.year
         if died_by(item, today, death):
@@ -652,7 +652,7 @@ def format_birth(item: dict, today: date,
         else:
             lines.append(f"🎉 <b>Сегодня исполнилось {years} {years_word(years)}</b>")
     else:
-        lines.append("🎂 Возраст: нет данных")
+        lines.append("🎂 Возраст: Секрет")
     if death and died_by(item, today, death):
         lines.append(f"🕯️ Дата ухода: {death.display()}")
     # Поля event, achievements, fact и прочие биографические описания НЕ публикуем.
@@ -676,7 +676,7 @@ def format_death(item: dict, today: date,
     if age is not None:
         lines.append(f"🌹 Возраст на момент смерти: {age} {years_word(age)}")
     else:
-        lines.append("🌹 Возраст на момент смерти: нет данных")
+        lines.append("🌹 Возраст на момент смерти: Секрет")
     return "\n".join(lines)
 
 
