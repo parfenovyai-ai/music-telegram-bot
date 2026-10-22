@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Telegram-бот «Рок-сообщество»: ежедневный дайджест и 300 рок-афоризмов.
+"""Telegram-бот «Рок-сообщество»: компактный рок-календарь и 300 рок-афоризмов.
 
 СТРУКТУРА БАЗЫ НЕ МЕНЯЕТСЯ: читается прежний database_deepseek.json,
 список объектов с полями date, artist, group, role, event, gender.
@@ -14,15 +14,19 @@
 - единая шапка с СЕГОДНЯШНЕЙ датой внутри сообщения, не отдельный пустой пост;
 - дата каждого ушедшего музыканта указывается отдельно, с его годом;
 - возраст / годовщина рассчитываются только при наличии года в базе;
+- если возраст вычислить нельзя, выводится «нет данных»;
 - записи sent.json отмечаются сразу после успешной отправки;
+- никаких описаний/биографий из поля event в карточках рождения и памяти;
+- исторические события получают краткое название из event, без описаний;
+- сортировка, сводка количества событий и компактные карточки;
 - публикации не содержат выдуманных ИИ биографий или приписанных музыкантам цитат;
 - 300 оригинальных коротких рок-афоризмов встроены в файл,
   один размещается в конце каждого сообщения без ложной атрибуции.
 
 Запуск:
   pip install requests
-  python rock_community_bot_legacy_json.py --dry-run --date 2026-10-21
-  python rock_community_bot_legacy_json.py
+  python main.py --dry-run --date 2026-10-21
+  python main.py
 
 Для реальной отправки укажите BOT_TOKEN и CHANNEL_ID в переменных окружения.
 Python 3.11+, часовой пояс по умолчанию: Europe/Moscow.
@@ -41,7 +45,6 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from html import escape
 from pathlib import Path
-from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 import requests
@@ -618,66 +621,18 @@ def died_by(item: dict, on_day: date, known_death: EventDate | None = None) -> b
     return yr is not None and yr < on_day.year
 
 
-def verified_quote(item: dict) -> list[str]:
-    """Поддержка полей из v2. Не ищем, не генерируем и не приписываем цитаты."""
-    quote = as_text(item.get("quote"))
-    source = as_text(item.get("quote_source"))
-    if not (quote and source and item.get("quote_verified") is True):
-        return []
-    if as_text(item.get("quote_type")).lower() in {"lyrics", "песня", "строка песни"}:
-        if len(quote.split()) > 10:
-            LOG.warning("Слишком длинная цитата из песни (%s)", item.get("artist", "?"))
-            return []
-    clean_quote = quote.strip("«»\" ")
-    result = [f"💬 <i>«{html(clean_quote, 260)}»</i>"]
-    raw_url = as_text(item.get("quote_url") or item.get("quote_source_url"))
-    src = f"Источник: {html(source, 180)}"
-    if raw_url and len(raw_url) <= 500:
-        parsed = urlsplit(raw_url)
-        if parsed.scheme in ("http", "https") and parsed.hostname:
-            src += f' (<a href="{escape(raw_url, quote=True)}">ссылка</a>)'
-    result.append(f"📚 {src}")
-    return result
-
-
-def list_achievements(item: dict) -> list[str]:
-    raw = item.get("achievements") or item.get("achievement")
-    if isinstance(raw, str):
-        return [clean_text(raw, 260)] if raw.strip() else []
-    if isinstance(raw, list):
-        return [clean_text(s, 260) for s in raw if isinstance(s, str) and s.strip()][:3]
-    return []
-
-
-def details_from_database(item: dict, kind: str) -> list[str]:
-    """Показываем только данные, уже записанные в JSON."""
-    lines: list[str] = []
-    event = as_text(item.get("event"))
-    if event and event.casefold().strip(" .!:") not in {
-        "родился", "родилась", "умер", "умерла", "скончался", "скончалась",
-        "погиб", "погибла", "ушёл из жизни", "ушла из жизни",
-    }:
-        lines.append(f"📖 {html(event, 620)}")
-
-    achievements = list_achievements(item)
-    if achievements:
-        lines.append("🏆 <b>Достижения и вклад:</b>")
-        lines.extend(f"• {html(value, 260)}" for value in achievements)
-    note = item.get("contribution") if kind == "death" else item.get("fact")
-    if note:
-        lines.append(f"💡 {html(note, 380)}")
-    if item.get("song"):
-        lines.append(f"🎧 Что послушать: {html(item['song'], 130)}")
-    lines.extend(verified_quote(item))
-    return lines
-
-
 def person_info(item: dict) -> list[str]:
+    """Короткая карточка: имя и группа/инструмент в одной строке."""
     lines = [f"👤 <b>{html(item.get('artist') or 'Музыкант', 170)}</b>"]
-    if as_text(item.get("group")):
-        lines.append(f"🎵 {html(item['group'], 150)}")
-    if as_text(item.get("role")):
-        lines.append(f"🎸 {html(item['role'], 150)}")
+    group = as_text(item.get("group"))
+    role = as_text(item.get("role"))
+    about = []
+    if group:
+        about.append(f"🎵 {html(group, 150)}")
+    if role:
+        about.append(f"🎸 {html(role, 150)}")
+    if about:
+        lines.append("  ·  ".join(about))
     return lines
 
 
@@ -686,17 +641,19 @@ def format_birth(item: dict, today: date,
     lines = person_info(item)
     birthday, death = known_dates(item, people)
     if birthday:
-        lines.append(f"📅 Дата рождения: {birthday.display()}")
-        if birthday.year is not None and birthday.year <= today.year:
-            years = today.year - birthday.year
-            if died_by(item, today, death):
-                lines.append(f"🎂 Сегодня исполнилось бы {years} {years_word(years)}")
-            else:
-                # Нейтрально: отсутствие года смерти в JSON не доказывает, что человек жив.
-                lines.append(f"🎉 {years} {years_word(years)} со дня рождения")
+        lines.append(f"📅 {birthday.display()}")
+    # Без года рождения не вычисляем возраст и не подставляем дату.
+    if birthday is not None and birthday.year is not None and birthday.year <= today.year:
+        years = today.year - birthday.year
+        if died_by(item, today, death):
+            lines.append(f"🎂 <b>Сегодня исполнилось бы {years} {years_word(years)}</b>")
+        else:
+            lines.append(f"🎉 <b>{years} {years_word(years)} со дня рождения</b>")
+    else:
+        lines.append("🎂 Возраст: нет данных")
     if death and died_by(item, today, death):
         lines.append(f"🕯️ Дата ухода: {death.display()}")
-    lines.extend(details_from_database(item, "birth"))
+    # Поля event, achievements, fact и прочие биографические описания НЕ публикуем.
     return "\n".join(lines)
 
 
@@ -706,26 +663,49 @@ def format_death(item: dict, today: date,
     birthday, death = known_dates(item, people)
     if death:
         lines.append(f"📅 Дата ухода: {death.display()}")
-        if death.year is not None and death.year < today.year:
+        if death.year is not None and death.year <= today.year:
             years = today.year - death.year
-            lines.append(f"🕯️ {years} {years_word(years)} со дня ухода")
-        age = age_at_death(birthday, death)
-        if age is not None:
-            lines.append(f"🌹 Возраст на момент смерти: {age} {years_word(age)}")
-    lines.extend(details_from_database(item, "death"))
+            lines.append(f"🕯️ <b>{years} {years_word(years)} со дня ухода</b>")
+        else:
+            lines.append("🕯️ Годовщина: нет данных")
+    else:
+        lines.append("🕯️ Годовщина: нет данных")
+    age = age_at_death(birthday, death)
+    if age is not None:
+        lines.append(f"🌹 Возраст на момент смерти: {age} {years_word(age)}")
+    else:
+        lines.append("🌹 Возраст на момент смерти: нет данных")
     return "\n".join(lines)
+
+
+def event_title(item: dict) -> str:
+    """Только короткий заголовок события из существующего event, без описания.
+
+    Не генерируем факты и не вставляем длинные биографии. Если заголовок
+    пуст, используем нейтральную подпись, не выдумывая само событие.
+    """
+    text = " ".join(as_text(item.get("event")).split())
+    if not text:
+        return "Музыкальное событие"
+    # Берём только первое предложение, если запись содержит несколько.
+    candidate = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)[0]
+    return clean_text(candidate, 115)
 
 
 def format_other(item: dict, today: date,
                  people: dict[tuple[str, str], PersonHistory] | None = None) -> str:
-    lines = person_info(item)
+    lines = [f"💿 <b>{html(event_title(item), 115)}</b>"]
+    if as_text(item.get("artist")) or as_text(item.get("group")) or as_text(item.get("role")):
+        lines.extend(person_info(item))
     event_date = date_for_event(item)
     if event_date:
-        lines.append(f"📅 Дата события: {event_date.display()}")
-        if event_date.year is not None and event_date.year < today.year:
+        lines.append(f"📅 {event_date.display()}")
+        if event_date.year is not None and event_date.year <= today.year:
             years = today.year - event_date.year
             lines.append(f"⏳ {years} {years_word(years)} со дня события")
-    lines.extend(details_from_database(item, "other"))
+        else:
+            lines.append("⏳ Годовщина: нет данных")
+    # Полных описаний событий и пояснений из базы больше нет.
     return "\n".join(lines)
 
 
@@ -746,30 +726,49 @@ def original_event_identity(item: dict, today: date) -> str:
     return f"{today.year}_{hashlib.sha256(packed.encode('utf-8')).hexdigest()}"
 
 
-def common_header(today: date) -> str:
-    return ("🎸 <b>РОК-СОБЫТИЯ СЕГОДНЯ</b>\n"
-            f"📅 {today.day} {RUS_MONTHS[today.month]} {today.year} года\n"
-            "🃏 <b>Рок-сообщество</b>")
+def common_header(today: date, totals: dict[str, int] | None = None,
+                  part: int | None = None, total_parts: int | None = None) -> str:
+    lines = [
+        "🎸 <b>РОК-КАЛЕНДАРЬ</b>",
+        f"📅 {today.day} {RUS_MONTHS[today.month]} {today.year} года · 🃏 Рок-сообщество",
+    ]
+    if totals is not None:
+        lines.append("За день: " + "  ·  ".join((
+            f"🎂 {totals.get('birth', 0)}",
+            f"🕯️ {totals.get('death', 0)}",
+            f"💿 {totals.get('other', 0)}",
+        )))
+    if part is not None and total_parts is not None and total_parts > 1:
+        lines.append(f"📄 Часть {part}/{total_parts}")
+    return "\n".join(lines)
 
 
 def publication_text(blocks: list[tuple[str, str, str]], today: date,
-                     post_number: int = 0) -> str:
-    """Единая шапка, тематические разделы и одна рок-мысль в конце.
-
-    Отдельные сообщения в один день получают разные афоризмы.
-    """
-    lines = [common_header(today)]
+                     post_number: int = 0,
+                     totals: dict[str, int] | None = None,
+                     total_parts: int | None = None) -> str:
+    """Шапка и статистика, единые рубрики, компактные карточки без описаний."""
+    lines = [common_header(today, totals, post_number + 1, total_parts)]
     last_section: str | None = None
     for _, section, content in blocks:
-        lines.extend(["", SEPARATOR, ""])
         if section != last_section:
-            lines.append(section)
-            lines.append("")
+            lines.extend(["", SEPARATOR, "", section, ""])
+        else:
+            lines.extend(["", "· · ·", ""])
         lines.append(content)
         last_section = section
     if blocks:
         lines.extend(["", SEPARATOR, "", phrase_footer(today, post_number)])
     return "\n".join(lines)
+
+
+def _sort_event(item: tuple[str, dict], kind: str) -> tuple[int, int, str]:
+    """Сначала известные годы: старшие именинники / ранние даты смерти."""
+    _, event = item
+    dt = date_for_event(event)
+    yr = dt.year if dt and dt.year is not None else 10_000
+    artist = as_text(event.get("artist")).casefold()
+    return (int(yr == 10_000), yr, artist)
 
 
 def build_publications(events: list[tuple[str, dict]], today: date,
@@ -778,33 +777,39 @@ def build_publications(events: list[tuple[str, dict]], today: date,
     sections = [
         ("birth", "🎂 <b>ДНИ РОЖДЕНИЯ</b>", format_birth),
         ("death", "🕯️ <b>ПОМНИМ</b>", format_death),
-        ("other", "🎼 <b>ЭТОТ ДЕНЬ В ИСТОРИИ РОКА</b>", format_other),
+        ("other", "💿 <b>ИСТОРИЯ РОКА</b>", format_other),
     ]
+    totals = {kind: sum(event_kind(item) == kind for _, item in events)
+              for kind, _, _ in sections}
     blocks: list[tuple[str, str, str]] = []
     for kind, title, formatter in sections:
-        for event_id, item in events:
-            if event_kind(item) == kind:
-                blocks.append((event_id, title, formatter(item, today, people)))
+        rows = ((eid, item) for eid, item in events if event_kind(item) == kind)
+        for event_id, item in sorted(rows, key=lambda entry: _sort_event(entry, kind)):
+            blocks.append((event_id, title, formatter(item, today, people)))
 
-    posts: list[Publication] = []
+    # Учитываем запас на пометку «Часть n/m» для длинных подборок.
+    # Карточку музыканта не разрываем между сообщениями.
+    safe_limit = MAX_MESSAGE_LENGTH - 80
+    groups: list[list[tuple[str, str, str]]] = []
     current: list[tuple[str, str, str]] = []
     for block in blocks:
         candidate = current + [block]
-        if len(publication_text(candidate, today, len(posts))) > MAX_MESSAGE_LENGTH and current:
-            posts.append(Publication(
-                tuple(entry[0] for entry in current),
-                publication_text(current, today, len(posts)),
-            ))
+        if len(publication_text(candidate, today, len(groups), totals)) > safe_limit and current:
+            groups.append(current)
             current = []
-        if len(publication_text([block], today, len(posts))) > MAX_MESSAGE_LENGTH:
+        if len(publication_text([block], today, len(groups), totals)) > safe_limit:
             LOG.error("Пропущена слишком длинная запись: %s", block[0])
             continue
         current.append(block)
     if current:
-        posts.append(Publication(
-            tuple(entry[0] for entry in current),
-            publication_text(current, today, len(posts)),
-        ))
+        groups.append(current)
+
+    posts: list[Publication] = []
+    for index, group in enumerate(groups):
+        content = publication_text(group, today, index, totals, len(groups))
+        if len(content) > MAX_MESSAGE_LENGTH:
+            raise ValueError(f"Выпуск {index + 1} превышает лимит длины сообщения")
+        posts.append(Publication(tuple(entry[0] for entry in group), content))
     return posts
 
 
