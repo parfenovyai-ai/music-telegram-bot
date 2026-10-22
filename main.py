@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Telegram-бот «Рок-сообщество»: компактный рок-календарь и 300 рок-афоризмов.
+"""Telegram-бот «Рок-сообщество»: две отдельные публикации и 300 рок-афоризмов.
 
 СТРУКТУРА БАЗЫ НЕ МЕНЯЕТСЯ: читается прежний database_deepseek.json,
 список объектов с полями date, artist, group, role, event, gender.
@@ -11,17 +11,18 @@
 Дополнительные существующие поля (если они уже есть) читаются необязательно.
 
 Изменения по сравнению с первоначальной программой:
-- единая шапка с СЕГОДНЯШНЕЙ датой внутри сообщения, не отдельный пустой пост;
+- отдельные посты с датой: памятные даты и дни рождения (разные реакции);
 - дата каждого ушедшего музыканта указывается отдельно, с его годом;
 - возраст / годовщина рассчитываются только при наличии года в базе;
 - если возраст вычислить нельзя, выводится «нет данных»;
 - записи sent.json отмечаются сразу после успешной отправки;
 - никаких описаний/биографий из поля event в карточках рождения и памяти;
-- исторические события получают краткое название из event, без описаний;
+- максимум две рубрики: «УШЁЛ/УШЛА/УШЛИ ИЗ ЖИЗНИ» и «РОДИЛСЯ/РОДИЛАСЬ/РОДИЛИСЬ», каждая отдельным сообщением;
+- события без признаков рождения или смерти в этих рубриках не публикуются;
 - сортировка, сводка количества событий и компактные карточки;
 - публикации не содержат выдуманных ИИ биографий или приписанных музыкантам цитат;
 - 300 оригинальных коротких рок-афоризмов встроены в файл,
-  один размещается в конце каждого сообщения без ложной атрибуции.
+  одна мысль дня размещается в конце последнего поста (или единственного).
 
 Запуск:
   pip install requests
@@ -612,17 +613,18 @@ def died_by(item: dict, on_day: date, known_death: EventDate | None = None) -> b
     if item.get("deceased") is True or item.get("alive") is False:
         return True
     died = known_death if known_death is not None else person_death_date(item)
-    if died and died.year is not None:
-        if died.year < on_day.year:
+    if died:
+        # Запись о смерти без года тоже подтверждает, что человек умер;
+        # неизвестным остаётся только конкретный год смерти.
+        if died.year is None:
             return True
-        if died.year == on_day.year and (died.month, died.day) <= (on_day.month, on_day.day):
-            return True
+        return date(died.year, died.month, died.day) <= on_day
     yr = valid_year(item.get("death_year") or item.get("year_of_death"))
-    return yr is not None and yr < on_day.year
+    return yr is not None and yr <= on_day.year
 
 
 def person_info(item: dict) -> list[str]:
-    """Короткая карточка: имя и группа/инструмент в одной строке."""
+    """Роль/инструмент берём ДОСЛОВНО из JSON, ничего не переименовываем."""
     lines = [f"👤 <b>{html(item.get('artist') or 'Музыкант', 170)}</b>"]
     group = as_text(item.get("group"))
     role = as_text(item.get("role"))
@@ -630,7 +632,7 @@ def person_info(item: dict) -> list[str]:
     if group:
         about.append(f"🎵 {html(group, 150)}")
     if role:
-        about.append(f"🎸 {html(role, 150)}")
+        about.append(f"🎼 {html(role, 150)}")
     if about:
         lines.append("  ·  ".join(about))
     return lines
@@ -648,7 +650,7 @@ def format_birth(item: dict, today: date,
         if died_by(item, today, death):
             lines.append(f"🎂 <b>Сегодня исполнилось бы {years} {years_word(years)}</b>")
         else:
-            lines.append(f"🎉 <b>{years} {years_word(years)} со дня рождения</b>")
+            lines.append(f"🎉 <b>Сегодня исполнилось {years} {years_word(years)}</b>")
     else:
         lines.append("🎂 Возраст: нет данных")
     if death and died_by(item, today, death):
@@ -726,6 +728,48 @@ def original_event_identity(item: dict, today: date) -> str:
     return f"{today.year}_{hashlib.sha256(packed.encode('utf-8')).hexdigest()}"
 
 
+def person_gender(item: dict) -> str | None:
+    """Пол сначала берём из существующего поля gender, затем — из глагола event.
+
+    По окончанию имени пол не угадываем: это даёт ложные результаты.
+    """
+    raw = as_text(item.get("gender")).casefold()
+    if raw in {"ж", "жен", "женский", "женщина", "female", "f", "woman"}:
+        return "female"
+    if raw in {"м", "муж", "мужской", "мужчина", "male", "m", "man"}:
+        return "male"
+    event = as_text(item.get("event")).casefold()
+    if re.search(r"\b(родилась|умерла|погибла|скончалась|ушла из жизни)\b", event):
+        return "female"
+    if re.search(r"\b(родился|умер|погиб|скончался|уш[её]л из жизни)\b", event):
+        return "male"
+    return None
+
+
+def section_heading(kind: str, items: list[dict]) -> str:
+    """Согласуем заголовки по числу людей и полу при единственной записи."""
+    count = len(items)
+    if kind == "death":
+        if count != 1:
+            word = "УШЛИ ИЗ ЖИЗНИ"
+        else:
+            gender = person_gender(items[0])
+            word = "УШЛА ИЗ ЖИЗНИ" if gender == "female" else (
+                "УШЁЛ ИЗ ЖИЗНИ" if gender == "male" else "УХОД ИЗ ЖИЗНИ"
+            )
+        return f"🕯️ <b>1. {word}</b>"
+    if kind == "birth":
+        if count != 1:
+            word = "РОДИЛИСЬ"
+        else:
+            gender = person_gender(items[0])
+            word = "РОДИЛАСЬ" if gender == "female" else (
+                "РОДИЛСЯ" if gender == "male" else "ДЕНЬ РОЖДЕНИЯ"
+            )
+        return f"🎂 <b>2. {word}</b>"
+    raise ValueError(f"Неизвестный раздел: {kind}")
+
+
 def common_header(today: date, totals: dict[str, int] | None = None,
                   part: int | None = None, total_parts: int | None = None) -> str:
     lines = [
@@ -734,31 +778,33 @@ def common_header(today: date, totals: dict[str, int] | None = None,
     ]
     if totals is not None:
         lines.append("За день: " + "  ·  ".join((
-            f"🎂 {totals.get('birth', 0)}",
-            f"🕯️ {totals.get('death', 0)}",
-            f"💿 {totals.get('other', 0)}",
+            f"🕯️ Памятных дат: {totals.get('death', 0)}",
+            f"🎂 Дней рождения: {totals.get('birth', 0)}",
         )))
     if part is not None and total_parts is not None and total_parts > 1:
         lines.append(f"📄 Часть {part}/{total_parts}")
     return "\n".join(lines)
 
 
-def publication_text(blocks: list[tuple[str, str, str]], today: date,
-                     post_number: int = 0,
-                     totals: dict[str, int] | None = None,
-                     total_parts: int | None = None) -> str:
-    """Шапка и статистика, единые рубрики, компактные карточки без описаний."""
-    lines = [common_header(today, totals, post_number + 1, total_parts)]
-    last_section: str | None = None
-    for _, section, content in blocks:
-        if section != last_section:
-            lines.extend(["", SEPARATOR, "", section, ""])
-        else:
+def publication_text(kind: str, title: str, cards: list[tuple[str, str]],
+                     today: date, section_total: int, *,
+                     part: int = 1, total_parts: int = 1,
+                     include_quote: bool = False) -> str:
+    """Один пост = ОДНА рубрика, чтобы реакции Telegram были раздельными.
+
+    В длинном выпуске рубрика может состоять из нескольких сообщений, но
+    содержимое рубрик никогда не смешивается. Карточки остаются целыми.
+    """
+    if kind not in ("death", "birth"):
+        raise ValueError(f"Неизвестная рубрика: {kind}")
+    lines = [common_header(today, part=part, total_parts=total_parts),
+             "", SEPARATOR, "", title, f"Музыкантов: {section_total}", ""]
+    for index, (_, content) in enumerate(cards):
+        if index:
             lines.extend(["", "· · ·", ""])
         lines.append(content)
-        last_section = section
-    if blocks:
-        lines.extend(["", SEPARATOR, "", phrase_footer(today, post_number)])
+    if include_quote:
+        lines.extend(["", SEPARATOR, "", phrase_footer(today)])
     return "\n".join(lines)
 
 
@@ -774,42 +820,51 @@ def _sort_event(item: tuple[str, dict], kind: str) -> tuple[int, int, str]:
 def build_publications(events: list[tuple[str, dict]], today: date,
                        people: dict[tuple[str, str], PersonHistory] | None = None
                        ) -> list[Publication]:
-    sections = [
-        ("birth", "🎂 <b>ДНИ РОЖДЕНИЯ</b>", format_birth),
-        ("death", "🕯️ <b>ПОМНИМ</b>", format_death),
-        ("other", "💿 <b>ИСТОРИЯ РОКА</b>", format_other),
-    ]
-    totals = {kind: sum(event_kind(item) == kind for _, item in events)
-              for kind, _, _ in sections}
-    blocks: list[tuple[str, str, str]] = []
-    for kind, title, formatter in sections:
-        rows = ((eid, item) for eid, item in events if event_kind(item) == kind)
-        for event_id, item in sorted(rows, key=lambda entry: _sort_event(entry, kind)):
-            blocks.append((event_id, title, formatter(item, today, people)))
+    """Сначала отдельный пост о смерти, затем отдельный пост о рождении.
 
-    # Учитываем запас на пометку «Часть n/m» для длинных подборок.
-    # Карточку музыканта не разрываем между сообщениями.
+    Не отправляем пустые рубрики. Ставим рок-мысль в последний пост дня,
+    чтобы не повторять её во всех сообщениях. Если рубрика слишком длинная,
+    создаём несколько сообщений только с её карточками.
+    """
+    # Сохраняем порядок по рубрикам, но никогда их не объединяем.
+    sections = (("death", format_death), ("birth", format_birth))
+    batches: list[tuple[str, str, int, list[tuple[str, str]], int, int]] = []
     safe_limit = MAX_MESSAGE_LENGTH - 80
-    groups: list[list[tuple[str, str, str]]] = []
-    current: list[tuple[str, str, str]] = []
-    for block in blocks:
-        candidate = current + [block]
-        if len(publication_text(candidate, today, len(groups), totals)) > safe_limit and current:
-            groups.append(current)
-            current = []
-        if len(publication_text([block], today, len(groups), totals)) > safe_limit:
-            LOG.error("Пропущена слишком длинная запись: %s", block[0])
+
+    for kind, formatter in sections:
+        rows = [(event_id, item) for event_id, item in events if event_kind(item) == kind]
+        if not rows:
             continue
-        current.append(block)
-    if current:
-        groups.append(current)
+        title = section_heading(kind, [item for _, item in rows])
+        rows.sort(key=lambda entry: _sort_event(entry, kind))
+        cards = [(event_id, formatter(item, today, people)) for event_id, item in rows]
+        groups: list[list[tuple[str, str]]] = []
+        current: list[tuple[str, str]] = []
+        for card in cards:
+            candidate = current + [card]
+            # Резервируем место даже под рок-мысль и номер части.
+            if len(publication_text(kind, title, candidate, today, len(rows),
+                                    include_quote=True)) > safe_limit and current:
+                groups.append(current)
+                current = []
+            if len(publication_text(kind, title, [card], today, len(rows),
+                                    include_quote=True)) > safe_limit:
+                LOG.error("Пропущена слишком длинная запись: %s", card[0])
+                continue
+            current.append(card)
+        if current:
+            groups.append(current)
+        for part, group in enumerate(groups, start=1):
+            batches.append((kind, title, len(rows), group, part, len(groups)))
 
     posts: list[Publication] = []
-    for index, group in enumerate(groups):
-        content = publication_text(group, today, index, totals, len(groups))
-        if len(content) > MAX_MESSAGE_LENGTH:
-            raise ValueError(f"Выпуск {index + 1} превышает лимит длины сообщения")
-        posts.append(Publication(tuple(entry[0] for entry in group), content))
+    for index, (kind, title, total, group, part, parts) in enumerate(batches):
+        text = publication_text(kind, title, group, today, total,
+                                part=part, total_parts=parts,
+                                include_quote=(index == len(batches) - 1))
+        if len(text) > MAX_MESSAGE_LENGTH:
+            raise ValueError(f"Сообщение {index + 1} превышает лимит Telegram")
+        posts.append(Publication(tuple(event_id for event_id, _ in group), text))
     return posts
 
 
@@ -906,6 +961,9 @@ def check_events(*, db_path: str = DB_FILE, sent_path: str = SENT_FILE,
         if (event_date.month, event_date.day) != (today.month, today.day):
             continue
         if event_date.year is not None and event_date.year > today.year:
+            continue
+        if event_kind(item) not in ("death", "birth"):
+            # Два согласованных блока; прочие исторические события не публикуем.
             continue
         marker = event_identity(item, today)
         if marker in seen or marker in sent or original_event_identity(item, today) in sent:
